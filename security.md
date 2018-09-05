@@ -1,6 +1,9 @@
-# Security: Development through production with Docker containers
+# Security: Development to production with Docker containers
 
-## 2 Docker
+## 1 Purpose
+Review how Predictive Medicine addresses some systemic security vulnerabilities when building Docker images and while running Docker containerized microservices.
+
+## 2 Building Docker Images
 ### 2.1 Definitions
 #### 2.1.1 Docker Image
 - A unit of standardized, packaged software for development and deployment
@@ -33,6 +36,9 @@ RUN pip install --requirement requirements.txt
 - Adds a final layer to a docker image that holds runtime
 - Suspendible, restartable, disposable
 
+#### 2.1.3 Docker
+- A daemon for managing Docker images and running Docker containers both locally for test, and development; as well as clustered for test, integration, staging, and production
+
 ### 2.2 Docker Image Security
 
 #### 2.2.1 Vulnerability: Embedded Secrets
@@ -55,7 +61,7 @@ RUN pip install --requirement requirements.txt
 - Use directory convention for `/secrets` with `.env` files and env variables
 - Use judicious `COPY` in `Dockerfile` as shown in good <a href="#good-dockerfile">Dockerfile</a>
 - Use `.dockerignore` to block files/directories from `COPY`
-  - Exclude by adding `**/secrets` to `.dockeringore`
+  - Exclude by adding `**/secrets` to `.dockerignore`
 
 ```
 .cache
@@ -86,17 +92,17 @@ RUN pip install --requirement requirements.txt
 !local/microservice.system.test.cfg
 ```
 - <font style="color: maroon;">Do not build and push images from localhost to docker image repository!</font> `docker push quay.io.pennsignals/microservice:v2.0`
-  - No guarantee that the v2.0 code from version control is pushed, the local docker tag isn't necesarily the tag from version control
+  - No guarantee that the v2.0 code from version control is pushed, the local docker tag isn't necessarily the tag from version control
   - No guarantee that the image doesn't include extra files or secrets from localhost
   - Use image repository to check out code from version control to build images [automatically](https://quay.io/repository/pennsignals/alpine-3.7-python-3.6-engineering?tab=builds).
   - Applies version control, `.gitignore` as well as `.dockerignore`
 
-#### 2.2.3 Vulnerability: Unpatched Packages
+#### 2.2.3 Vulnerability: Un-patched Packages
 
 - Number of vulnerabilities increases over time
 - Attack surface increases with the number of packages
 
-#### 2.2.4 Mitigations: Unpatched Packages
+#### 2.2.4 Mitigations: Un-patched Packages
 
 - Review packages used in images: [pennsignals](https://quay.io/repository/pennsignals/alpine-3.7-python-3.6-engineering/manifest/sha256:1390e7dd352ffc7e67be95185169c09d6604fde5aa472453749f5ead27689ecc?tab=layers)
 - Monitor the automated docker image repository scans:
@@ -157,11 +163,12 @@ services:
 - A distributed, highly available production service to orchestrate docker containers
 - Depends on Hashicorp Consul for shared cluster state
 - Depends on Hashicorp Vault for injecting secrets and applying policy to jobs
-- Runs nomad jobs across a cluster of nomad clients/workers/executors
+- Runs nomad jobs across a cluster of nomad clients/workers
+- Manages clustered docker daemons and other kinds of clustered executors
 - Maps service volumes, ports and other resources from containers to/from nomad network
 - Uses nomad job files:
 
-```json
+```
 job "microservice" {
   datacenters = ["dc1"]
 
@@ -197,11 +204,12 @@ job "microservice" {
       }
       resources {
         network {
-          port "predction_events" {}
+          port "prediction_events" {}
         }
         cpu    = 8000
         memory = 4096
       }
+      
       # inject configuration from consul
       # changes to the consul key/value will automatically restart this task
       template {
@@ -210,7 +218,8 @@ job "microservice" {
 EOH
         destination = "/local/microservice.cfg"
       }
-      # inject secrets from consul/vault
+      
+      # inject secrets from vault
       template {
         data        = <<EOH
 MONGO_URI="{{with secret "secret/mongo/microservice/mongo_uri"}}{{.Data.value}}{{end}}"
@@ -263,23 +272,26 @@ path "secret/microservice/mssql" {
 - [Kelsey Hightower on 12 factor apps](https://medium.com/@kelseyhightower/12-fractured-apps-1080c73d481c)
 - [Twelve factor apps](https://12factor.net/)
 - [The Docker Book](https://dockerbook.com/)
+- [Consul](https://www.consul.io/intro/index.html)
+- [Nomad](https://www.nomadproject.io/intro/index.html)
+- [Vault](https://www.vaultproject.io/intro/index.html)
 
 <div style="page-break-after: always;"></div>
 
-## 6 High level plan for infrastructure and software engineering
+## 6 Appendices:
 
-### 6.1 Infrastructure
+### 6.1 Infrastructure Goals
 - Run durable production and staging environments for deployment and A/B tests of microservices
 - Run durable integration environment for scalability, load, system infrastructure tests, and infrastructure evolution
 - Run ephemeral test environments for production-like microservice systems tests
 - Automate infrastructure as code, eliminate configuration drift, rebuild vs patch
 
-### 6.2 Software engineering
+### 6.2 Software Engineering Goals
 - Automate all build, unit tests, systems tests, and **deployment** to a production-like test environment from code commit
 - Easy local development environments with few dependencies
 - High fidelity between local development environment and production-like test environments
 
-### 6.3 Development and Unit Test Environments
+### 6.3 Development and Test Environments
 - Local or unit test service running docker-compose
 - Usually runs a containerized database for output and microservice state
 

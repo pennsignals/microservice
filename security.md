@@ -134,7 +134,7 @@ RUN pip install --requirement requirements.txt
 - A development and test utility to orchestrate docker containers
 - Runs docker compose jobs in a virtual private network on localhost
 - Usually orchestrates containerized microservices
-- Usually also orchestrates containerized virtual machines for missing infrastructure or as an isolated substitutes for shared infrastructure
+- Usually also orchestrates containerized virtual machines for missing infrastructure or as isolated substitutes for shared infrastructure
 - Maps service volumes, ports and other resources from containers to/from locahost
 - Uses `docker-compose.yml` files:
 

@@ -147,8 +147,10 @@ services:
     stop_signal: SIGINT
     command: --noauth
     ports:
-    - "27017:27017"  # allow mongo connections from outside vpn (localhost)
+    - "27017:27017"  # map mongo to localhost port 27017
     restart: always
+
+  # data ingest services omitted here
 
   microservice:
     build: .
@@ -157,6 +159,8 @@ services:
     - ./secrets/microservice.env  # secrets are not in the Dockerfile
     environment:
     - MONGO_URI=mongodb://mongo/tests  # orchestration of dynamic mongo address "..//mongo/..."
+    ports:
+    - "9000:9000"  # map zmq prediction events to localhost port 9000 
 
 ```
 #### 3.3.3 Hashicorp Nomad
@@ -182,6 +186,8 @@ job "microservice" {
     restart {
       mode = "delay"
     }
+
+    # data ingest tasks omitted here...
     
     # multiple tasks per group
     # NOMAD_ADDR is the ip address assigned by nomad to the task
@@ -193,9 +199,6 @@ job "microservice" {
       command = "microservice"
       env {
         MICROSERVICE_CONFIGURATION = "/local/microservice.cfg"
-        DEMOGRAPHIC_ZMQ            = "tcp://${NOMAD_ADDR_demographic_events} data"
-        FLOWSHEET_ZMQ              = "tcp://${NOMAD_ADDR_flowsheet_events} data"
-        MAR_ZMQ                    = "tcp://${NOMAD_ADDR_mar_events}" data"
         PREDICTION_ZMQ             = "tcp://0.0.0.0:${MONAD_PORT}_prediction_events" data""
       }
       image = "quay.io/pennsignals/microservice"

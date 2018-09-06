@@ -199,7 +199,7 @@ job "microservice" {
       command = "microservice"
       env {
         MICROSERVICE_CONFIGURATION = "/local/microservice.cfg"
-        PREDICTION_ZMQ             = "tcp://0.0.0.0:${MONAD_PORT}_prediction_events" data""
+        PREDICTION_ZMQ             = "tcp://0.0.0.0:${NOMAD_PORT_prediction_events}" data""
       }
       image = "quay.io/pennsignals/microservice"
       port_map = {

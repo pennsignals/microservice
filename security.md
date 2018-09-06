@@ -227,7 +227,7 @@ EOH
         data        = <<EOH
 MONGO_URI="{{with secret "secret/mongo/microservice/mongo_uri"}}{{.Data.value}}{{end}}"
 EOH
-        destination = "/secrets/mongo_uri.env"
+        destination = "/secrets/microservice.env"
         env         = true
       }
     }

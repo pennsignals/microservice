@@ -30,10 +30,7 @@ setup(
     entry_points={
         'console_scripts': [
             'microservice = microservice:Microservice.main',
-            'input.stream.a = microservice.InputStreamA.main',
-            'input.stream.b = microservice.InputStreamB.main',
-            'output.stream.a = microservice.OutputStreamA.main',
-            'output.stream.b = microservice.OutputStreamB.main',
+            'microservice.job = microservice:Microservice.job'
         ],
     },
     extras_require={
@@ -45,8 +42,8 @@ setup(
         'numpy',
         'pandas',
         'pymongo',
+        'pymssql',
         'pyyaml',
-        'pyzmq',
     ],
     packages=find_packages(exclude=['tests', 'tests.*']),
     python_requires='>=3.6',

@@ -6,6 +6,7 @@
 .gitignore
 .tox
 
+**/alloc
 **/build
 **/dist
 **/htmlcov

@@ -1,4 +1,4 @@
-FROM quay.io/pennsignals/alpine-3.8-python-3.7-datascience:v2.0
+FROM quay.io/pennsignals/alpine-3.8-python-3.7-datascience-mssql:v2.0
 WORKDIR /tmp
 COPY ./microservice ./microservice
 COPY ./tests ./tests

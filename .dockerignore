@@ -2,7 +2,7 @@
 .coverage
 .dockerignore
 .egg
-.git
+# .git
 .gitignore
 .tox
 

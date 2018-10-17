@@ -6,12 +6,9 @@
 .gitignore
 .tox
 
-**/alloc
 **/build
 **/dist
 **/htmlcov
-**/local
-**/nomad
 **/secrets
 **/__pycache__
 **/*.egg-info
@@ -21,6 +18,15 @@
 **/*.pyo
 **/*.swp
 
+# nomad / docker-compose
+
+**/alloc
+
+**/local
 !local/.pylintrc
-!local/microservice.test.cfg
-!local/microservice.system.test.cfg
+!local/unit.test.cfg
+!local/system.test.cfg
+
+**/model
+
+**/secrets

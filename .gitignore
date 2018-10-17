@@ -102,6 +102,16 @@ venv/
 # mac
 .DS_Store
 
-# nomad secrets
+# nomad / docker-compose secrets
+
+**/local
+!/local/.pylintrc
+!/local/readme.md
+!/local/example.cfg
+!/local/production.cfg
+!/local/staging.cfg
+!/local/unit.test.cfg
+
 **/secrets
-!secrets/readme.md
+!/secrets/readme.md
+!/secrets/example.env

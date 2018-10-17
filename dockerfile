@@ -3,7 +3,7 @@ WORKDIR /tmp
 COPY ./microservice ./microservice
 COPY ./tests ./tests
 COPY ./local ./local
-COPY ./readmd.md ./
+COPY ./readme.md ./
 COPY ./setup.py ./
 COPY ./setup.cfg ./
 COPY ./requirements.txt ./

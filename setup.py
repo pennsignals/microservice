@@ -1,4 +1,4 @@
-"""Setup ventilator model."""
+"""Setup microservice."""
 
 from datetime import date
 from os.path import (
@@ -37,6 +37,7 @@ def get_long_description(file_name='readme.md'):
 setup(
     name='microservice',
     author='Penn Medicine Predictive Healthcare',
+    version='1.0',
     classifiers=(
         'Development Status :: 3 - Alpha',
         'Programming Language :: Python :: 3',
@@ -66,9 +67,5 @@ setup(
     setup_requires=('pytest-runner', 'setuptools_scm'),
     tests_require=TESTS_REQUIRE,
     url='https://github.com/pennsignals/microservice',
-    use_scm_version=dict(
-        local_scheme='dirty-tag',
-        version_scheme='guess-next-dev',
-        write_to='microservice/__version__.py',
-    ),
+    # use_scm_version=True
 )

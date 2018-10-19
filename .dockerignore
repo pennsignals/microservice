@@ -2,18 +2,16 @@
 .coverage
 .dockerignore
 .egg
-# .git
+.git
 .gitignore
 .tox
 
 **/build
 **/dist
 **/htmlcov
-**/secrets
 **/__pycache__
 **/*.egg-info
 **/*.egg
-**/*.db
 **/*.pyc
 **/*.pyo
 **/*.swp

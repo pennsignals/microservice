@@ -3,6 +3,7 @@
 from argparse import ArgumentParser
 from gc import collect
 import logging
+from os import stout
 
 from yaml import safe_load as yaml_loads
 
@@ -16,7 +17,8 @@ TZ_AWARE = True
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=stdout)
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +33,13 @@ def garbage_collection(func):
     return _wrapper
 
 
+class Model:
+    """Model."""
+    pass
+
+
 class Microservice:
+    """Microservice."""
 
     ARGS = {}
     DESCRIPTION = 'Microservice'
@@ -69,3 +77,68 @@ class Microservice:
                 kwargs['default'] = default
             parser.add_argument(arg, **kwargs)
         return parser.parse_args(argv)
+
+
+class Scheduled(Microservice):
+    """Scheduled microservice."""
+
+    @classmethod
+    def run_once_now(cls):
+        """Run once now."""
+        i = cls.from_argv(sys_argv[1:])
+        i.run()
+
+    @classmethod
+    def run_on_schedule(cls):
+        """Run on schedule."""
+        i = cls.from_argv(sys_argv[1:])
+        every().day.at(i.scheduled_time).do(i.run)
+        i()
+
+    def __init__(
+            self,
+            inputs, outputs, model,
+            scheduled_time,
+            resolution):
+        """Initialize microservice."""
+        self.inputs = inputs
+        self.outputs = outputs
+        self.model = model
+        self.scheduled_time = scheduled_time
+        self.resolution = resolution
+
+    def __call__(self):
+        """Run microservice."""
+        old_value = None
+
+        for each in outputs:
+            each.ping()
+
+        for each in inputs:
+            each.ping()
+
+        while True:
+            run_pending()
+            new_value = next_run()
+            now = datetime.now()
+            interval = max(
+                self.resolution,
+                (new_value - now).total_seconds() * 0.5)
+            if old_value != new_value:
+                logger.info(
+                    'Next scheduled run: %s, initial sleep interval is %s',
+                    new_value, interval)
+                old_value = new_value
+            block(interval)
+
+    def run(self):
+        """Run the model."""
+        raise NotImplementedError()  # pragme: no cover
+        # self.model(self.inputs, self.outputs, ...)
+
+
+class Intervaled(Microservice):
+    """Intervaled microservice."""
+
+
+

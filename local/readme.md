@@ -1,6 +1,13 @@
-Only `microservice.test.cfg`, and `microservice.system.test.cfg` are available to docker-compose. This contents of this directory are not available to nomad. See `../.dockerignore` and the nomad jobs.
+Configuration files go here.
+
+Only this file and select configuration files should be checked into version control. See `**/local` excluded with select inclusions in `../.gitignore`.
+Only configuration files used by travis for unit testing should be added to the docker container referenced from docker-compose files for unit testing. See `**/local` excluded with select inclusions in `.dockerignore`.
 
 Nomad jobs should contain template stanzas for insecure configuration from consul.
+
+    env {
+      MICROSERVICE_CONFIGURATION="/local/microservice.cfg"
+    }
 
     template {
       data = <<EOH

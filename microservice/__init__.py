@@ -7,7 +7,11 @@ from logging import (
 )
 from os import stdout
 
-from .core import Microservice as BaseMicroservice
+from .core import (
+    garbage_collection,
+    Microservice as BaseMicroservice,
+    Model as ModelBase,
+)
 
 from pkg_resources import (
     DistributionNotFound,
@@ -19,6 +23,18 @@ basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     stream=stdout)
 logger = getLogger(__name__)
+
+
+class Model:
+
+    def __init__(self):
+        """Initialize model."""
+        raise NotImplementedError()
+
+    @garbage_collection
+    def __call__(self):
+        """Run model."""
+        raise NotImplementedError()
 
 
 class Microservice(BaseMicroservice):
@@ -33,18 +49,10 @@ class Microservice(BaseMicroservice):
         },
     }
 
+    DESCRIPTION = 'Describe your microservice here.'
+
     ARGS = {
         **CONFIGURATION,
         # **More.ARGS,
         # **EventMore.ARGS,
     }
-
-    @classmethod
-    def main(cls):
-        """Run job inside scheduler from configuration."""
-        raise NotImplementedError()
-
-    @classmethod
-    def job(cls):
-        """Run job from configuration."""
-        raise NotImplementedError()

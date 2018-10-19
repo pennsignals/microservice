@@ -9,5 +9,5 @@ before_script:
   - docker build .
 script:
   - while sleep 300; do echo "===[ Keep alive at $SECONDS ]==="; done &
-  - docker run -it --rm $(docker images -q | head -1) /bin/ash -c 'python setup.py test'
+  - docker run -it --rm $(docker images -q | head -1) /bin/ash -c 'COVERAGE_STORAGE=json python setup.py test'
   - kill %1

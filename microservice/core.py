@@ -1,6 +1,7 @@
 """Core."""
 
 from argparse import ArgumentParser
+from cPickle import load
 from gc import collect
 import logging
 from os import stout
@@ -31,6 +32,12 @@ def garbage_collection(func):
         finally:
             collect()
     return _wrapper
+
+
+def unpickle_from_file(file_name):
+    """Return unpickle from file."""
+    with open(file_name, 'rb') as f:
+        return load(f)
 
 
 class Model:

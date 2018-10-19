@@ -25,6 +25,41 @@ basicConfig(
 logger = getLogger(__name__)
 
 
+
+
+
+class ClarityInput(Mssql):
+
+    CLARITY_DSN = {
+        ('CLARITY_DSN', '-clarity-dsn'): {
+            'default': [
+                'server',
+                'username',
+                'password',
+                'database',
+            ],
+            'dest': 'clarity_dsn',
+            'help': 'Mssql dsn for clarity (server, username, password, database).',
+            'nargs': 4,
+            'type': str,
+        },
+    }
+
+    def ping(self):
+        """Ping input."""
+        raise NotImplementedError()
+
+
+class Inputs(namedtuple('_Inputs', ('clarity',))):
+    """Inputs."""
+    pass
+
+
+class Outputs(namedtuple('_Outputs', ('prediction',))):
+    """Outputs."""
+    pass
+
+
 class Model:
 
     def __init__(self):

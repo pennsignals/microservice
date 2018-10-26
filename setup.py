@@ -19,7 +19,7 @@ TESTS_REQUIRE = (
     'flake8-mutable',
     'flake8-sorted-keys',
     'pep8-naming',
-    'pylint==1.8.4',  # pytest-pylint 0.9.0 is incompatible w pylint 1.9.x
+    'pylint',
     'pytest',
     'pytest-cov',
     'pytest-flake8',
@@ -53,12 +53,12 @@ setup(
     },
     include_package_data=True,
     install_requires=(
-        'curio',
         'numpy',
         'pandas',
         'pymongo',
         'pymssql',
         'pyyaml',
+        'schedule',
     ),
     long_description=get_long_description(),
     long_description_content_type='text/markdown',

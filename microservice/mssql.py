@@ -1,8 +1,17 @@
 """Mssql."""
 
-from collections import namedtuple
-from contextlib import closing
+from contextlib import (
+    closing,
+    contextmanager,
+)
 from functools import wraps
+from logging import (  # pylint: disable=unused-import
+    basicConfig,
+    DEBUG,
+    getLogger,
+    INFO,
+)
+from sys import stdout
 from time import sleep as block
 
 # pylint: disable=no-name-in-module
@@ -27,11 +36,11 @@ from .core import (
 # pylint: disable=invalid-name
 MssqlException = (MssqlDatabaseException, MssqlDriverException)
 
-logging.basicConfig(
-    level=logging.INFO,
+basicConfig(
+    level=INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     stream=stdout)
-logger = logging.getLogger(__name__)
+logger = getLogger(__name__)
 
 
 def retry_on_operational_error(retries=RETRIES, backoff=BACKOFF):
@@ -69,8 +78,8 @@ class Mssql(Configurable):
     @contextmanager
     def commit(self):
         """Mssql commit contextmanager."""
-        dsn = self._dsn
-        with MssqlConnection(*dsn) as connection:
+        connection = MssqlConnection(*self.dsn)
+        with closing(connection):
             try:
                 yield connection
                 connection.commit()
@@ -81,8 +90,8 @@ class Mssql(Configurable):
     @contextmanager
     def rollback(self):
         """Mssql rollback contextmanager."""
-        dsn = self._dsn
-        with MssqlConnection(*dsn) as connection:
+        connection = MssqlConnection(*self.dsn)
+        with closing(connection):
             try:
                 yield connection
             finally:

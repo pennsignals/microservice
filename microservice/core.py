@@ -1,11 +1,26 @@
 """Core."""
 
-from argparse import ArgumentParser
-from cPickle import load
+from argparse import (
+    ArgumentParser,
+    Namespace,
+)
+from datetime import datetime
+from functools import wraps
+from pickle import load
 from gc import collect
 import logging
-from os import stout
+from os import getenv
+from sys import (
+    argv as sys_argv,
+    stdout,
+)
+from time import sleep as block
 
+from schedule import (
+    every,
+    next_run,
+    run_pending,
+)
 from yaml import safe_load as yaml_loads
 
 
@@ -36,27 +51,22 @@ def garbage_collection(func):
 
 def unpickle_from_file(file_name):
     """Return unpickle from file."""
-    with open(file_name, 'rb') as f:
-        return load(f)
+    with open(file_name, 'rb') as fin:
+        return load(fin)
 
 
 class Configurable:
     """Configurable."""
 
     @classmethod
-    def from_cfg(cls, cfg):
+    def from_cfg(cls, cfg: dict) -> object:
         """Return model from cfg."""
         raise NotImplementedError()
 
     @classmethod
-    def patch_args(cls, cfg, args) -> None:
+    def patch_args(cls, cfg: dict, args: Namespace) -> None:
         """Patch args into cfg"""
         pass
-
-
-class Model(Configurable):
-    """Model."""
-    pass
 
 
 class Microservice:
@@ -66,29 +76,29 @@ class Microservice:
     DESCRIPTION = 'Microservice'
 
     @classmethod
-    def cfg_from_args(cls, args):
+    def cfg_from_args(cls, args: Namespace) -> dict:
         """Return cfg from args."""
         key = args.configuration
         assert key is not None
 
         with open(key) as fin:
-            cfg yaml_loads(fin.read())
+            cfg = yaml_loads(fin.read())
 
         cls.patch_args(cfg, args)
         return cfg
 
     @classmethod
-    def from_argv(cls, argv):
+    def from_argv(cls, argv) -> object:
         """Return microservice from command line and environment variables."""
         return cls.from_cfg(cls.cfg_from_args(cls.parse_args(argv)))
 
     @classmethod
-    def from_cfg(cls, cfg):
+    def from_cfg(cls, cfg: dict) -> object:
         """Return microservice from cfg."""
         raise NotImplementedError()  # pragma: no cover
 
     @classmethod
-    def parse_args(cls, argv):
+    def parse_args(cls, argv: list) -> Namespace:
         """Return parsed args from command line and environment variables."""
         parser = ArgumentParser(description=cls.DESCRIPTION)
         for key, kwargs in cls.ARGS.items():
@@ -103,22 +113,22 @@ class Microservice:
         return parser.parse_args(argv)
 
     @classmethod
-    def patch_args(cls, cfg, args):
+    def patch_args(cls, cfg: dict, args: Namespace) -> None:
         """Patch cfg from args."""
         raise NotImplementedError()
 
 
-class Scheduled(Microservice):
+class Scheduled(Microservice):  # pylint: disable=abstract-method
     """Scheduled microservice."""
 
     @classmethod
-    def run_once_now(cls):
+    def run_once_now(cls) -> None:
         """Run once now."""
         i = cls.from_argv(sys_argv[1:])
         i.run()
 
     @classmethod
-    def run_on_schedule(cls):
+    def run_on_schedule(cls) -> None:
         """Run on schedule."""
         i = cls.from_argv(sys_argv[1:])
         every().day.at(i.scheduled_time).do(i.run)
@@ -127,8 +137,9 @@ class Scheduled(Microservice):
     def __init__(
             self,
             input, output, model,
-            scheduled_time,
-            resolution):
+            scheduled_time: str,
+            resolution: float):
+        # pylint: disable=too-many-arguments,redefined-builtin
         """Initialize microservice."""
         self.input = input
         self.output = output
@@ -136,7 +147,7 @@ class Scheduled(Microservice):
         self.scheduled_time = scheduled_time
         self.resolution = resolution
 
-    def __call__(self):
+    def __call__(self) -> None:
         """Run microservice."""
         old_value = None
 
@@ -157,11 +168,12 @@ class Scheduled(Microservice):
                 old_value = new_value
             block(interval)
 
-    def run(self):
+    def run(self) -> None:
         """Run the model."""
         raise NotImplementedError()  # pragma: no cover
 
 
 class Intervaled(Microservice):
     """Intervaled microservice."""
+    # pylint: disable=abstract-method,too-few-public-methods
     pass

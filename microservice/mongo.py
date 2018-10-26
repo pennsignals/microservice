@@ -1,16 +1,36 @@
 """Mongo."""
 
+from collections import namedtuple
+from contextlib import (
+    closing,
+    contextmanager,
+)
 from functools import wraps
+from logging import (  # pylint: disable=unused-import
+    basicConfig,
+    DEBUG,
+    getLogger,
+    INFO,
+)
+from sys import stdout
 from time import sleep as block
+from uuid import uuid4
 
 from pymongo import MongoClient
 from pymongo.errors import AutoReconnect
 
-from core import (
+from .core import (
     BACKOFF,
     Configurable,
     RETRIES,
 )
+
+
+basicConfig(
+    level=INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=stdout)
+logger = getLogger(__name__)
 
 
 def retry_on_reconnect(retries=RETRIES, backoff=BACKOFF):
@@ -24,7 +44,7 @@ def retry_on_reconnect(retries=RETRIES, backoff=BACKOFF):
     def wrapper(func):
         """Return wrapped method."""
         @wraps(func)
-        def wrapped(*args, **kwargs):
+        def wrapped(obj, *args, **kwargs):
             """Return method result."""
             try:
                 return func(obj, *args, **kwargs)
@@ -54,12 +74,14 @@ class Mongo(Configurable):
         kwargs = {
             key: cast(cfg[key])
             for key, cast in (
-                ('uri', str)
-                ('collection', collection_cls),)}
+                ('uri', str),
+                ('collection', collection_cls),
+            )}
         kwargs['collection_cls'] = collection_cls
         return cls(**kwargs)
 
     def __init__(self, uri: str, collection: dict, collection_cls):
+        """Initialize Mongo."""
         self.uri = uri
         self._collection = collection
         self._collection_cls = collection_cls
@@ -67,7 +89,7 @@ class Mongo(Configurable):
 
     @contextmanager
     def collection(self):
-        """Collection contextmanager."""
+        """Contextmanager for collection."""
         with self.database() as database:
             kwargs = {
                 key: database[value]
@@ -77,14 +99,14 @@ class Mongo(Configurable):
 
     @contextmanager
     def connection(self):
-        """Connection contextmanager."""
+        """Contextmanager for connection."""
         connection = MongoClient(self.uri)
         with closing(connection):
             yield connection
 
     @contextmanager
     def database(self):
-        """Database contextmanager."""
+        """Contextmanager for database."""
         with self.connection() as connection:
             database = connection.get_database()
             yield database

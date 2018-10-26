@@ -1,32 +1,29 @@
 """Microservice."""
 
+from argparse import Namespace
+from collections import namedtuple
 from logging import (
     basicConfig,
     getLogger,
     INFO,
 )
-from os import stdout
-
-
-from pkg_resources import (
-    DistributionNotFound,
-    get_distribution,
-)
-
+from sys import stdout
+from uuid import uuid4
 
 from .core import (
+    Configurable,
     garbage_collection,
     Scheduled as BaseMicroservice,  # --or-- Intervaled as BaseMicroservice
-    Model as BaseModel,
 )
 from .mongo import (
     Mongo,
-    retry_on_reconnect,
+    retry_on_reconnect,  # pylint: disable=unused-import
 )
 from .mssql import (
     Mssql,
-    retry_on_operational_error,
+    retry_on_operational_error,  # pylint: disable=unused-import
 )
+
 
 basicConfig(
     level=INFO,
@@ -48,17 +45,17 @@ class Input(Mssql):
     }
 
     ARGS = {
-        **INPUT_DSN
+        **INPUT_DSN,
     }
 
     @classmethod
-    def from_cfg(cls, cfg):
+    def from_cfg(cls, cfg: dict) -> object:
         """Return model from cfg."""
         raise NotImplementedError()
 
     @classmethod
-    def patch_args(cls, cfg, args) -> None:
-        """Patch args into cfg"""
+    def patch_args(cls, cfg: dict, args: Namespace) -> None:
+        """Patch args into cfg."""
         for key, value in (
                 ('dsn', args.input_dsn),):  # match 'dest' in INPUT_DSN
             if value != '':
@@ -71,7 +68,8 @@ class Input(Mssql):
         Accept whatever additional arguments you need.
         Perhaps return a namedtuple and update the method signature
           if you have more than ~5 dfs
-        Perhaps accept monotinically increasing id intervals (from_id, to_id) for replayability.
+        Perhaps accept monotinically increasing id intervals
+            (from_id, to_id) for replayability.
           See monitor for an example.
         """
         #   with self.rollback() as cursor:
@@ -81,25 +79,28 @@ class Input(Mssql):
         raise NotImplementedError()
 
     # retry_on_operational_error()
-    # def get_df1(cursor):
+    # def get_df1(cursor) -> DataFrame:
         # """Get df1."""
         # cursor.execute('''select 1 as n''')
-        # return pd.DataFrame(cursor.fetchAll())
+        # return DataFrame(cursor.fetchAll())
         # raise NotImplementedError()
 
-    def ping(self):
+    def ping(self) -> None:
         """Ping input.
 
         Modify this method.
         Ensure that the input is online.
-        Perhaps check to see if the mssql database has the expected tables and stored procedure.
+        Perhaps check to see if the mssql database has the expected
+            tables and stored procedure.
           See ping in vent-notify-mssql example.
-        Set any startup state needed here: max_batch_id, last_inserted_date, etc.
+        Set any startup state needed here:
+            max_batch_id, last_inserted_date, etc.
         """
         raise NotImplementedError()
 
 
 class Output(Mongo):
+    """Output."""
 
     OUTPUT_URI = {
         ('OUTPUT_URI', '-output-uri'): {
@@ -115,22 +116,24 @@ class Output(Mongo):
     }
 
     @classmethod
-    def from_cfg(cls, cfg):
+    def from_cfg(cls, cfg: dict) -> object:
         """Return model from cfg."""
         collection_map = cfg['collection_map']
         collection_map_cls_name = '_CollectionMap' + uuid4().hex
-        collection_map_cls = namedtuple(collection_map_cls_name, collection_map.keys())
+        collection_map_cls = namedtuple(
+            collection_map_cls_name, collection_map.keys())
         kwargs = {
             key: cast(cfg[key])
             for key, cast in (
-                ('uri', str)
-                ('collection_map', collection_map_cls),)}
+                ('uri', str),
+                ('collection_map', collection_map_cls),
+            )}
         kwargs['collection_map_cls'] = collection_map_cls
         return cls(**kwargs)
 
     @classmethod
-    def patch_args(cls, cfg, args) -> None:
-        """Patch args into cfg"""
+    def patch_args(cls, cfg: dict, args: Namespace) -> None:
+        """Patch args into cfg."""
         for key, value in (
                 ('uri', args.output_uri),):  # match 'dest' in OUTPUT_URI
             if value != '':
@@ -147,28 +150,30 @@ class Output(Mongo):
         # prediction, *pfds = pdfs
         # with self.collection() as collection:
         #    self.write_evidence(collection.evidence, evidence)
-        #    self.write_predictions(collection.prediction, prediction)
+        #    self.write_prediction(collection.prediction, prediction)
         raise NotImplementedError()
 
-    def ping(self):
+    def ping(self) -> None:
         """Ping output.
 
         Ensure that the output is online.
-        Aquire any startup state needed here: max_batch_id, last_inserted_date, etc.
-          It is ok to read from outputs, but use a separate input if needed for local testing.
+        Aquire any startup state needed here:
+            max_batch_id, last_inserted_date, etc.
+        It is ok to read from outputs,
+            but use a separate input if needed for local testing.
         """
         raise NotImplementedError()
 
     # @retry_on_reconnect()
-    # def write_predictions(self, collection, df) -> None:
+    # def write_prediction(self, collection, df) -> None:
     #     collection.insert_many(df)
 
 
-
-class Model(BaseModel):
+class Model(Configurable):
+    """Model."""
 
     @garbage_collection
-    def __call__(self, input, output):
+    def __call__(self, input, output):  # pylint: disable=redefined-builtin
         """Run model."""
         idfs = input()
         tdfs = self.transform(*idfs)
@@ -176,9 +181,11 @@ class Model(BaseModel):
         output(idfs, pdfs)  # allow idfs to be tracked with their pdfs
 
     def transform(self, *idfs) -> tuple:
+        """Transform."""
         raise NotImplementedError()
 
     def predict(self, *tdfs) -> tuple:
+        """Predict."""
         raise NotImplementedError()
 
 
@@ -217,6 +224,7 @@ class Microservice(BaseMicroservice):
 
     @classmethod
     def patch_args(cls, cfg: dict, args) -> None:
+        """Patch cfg from args."""
         for key, patch_args in (
                 ('input', Input.patch_args),
                 ('output', Output.patch_args),

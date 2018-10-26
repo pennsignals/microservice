@@ -8,6 +8,7 @@ from pymongo.errors import AutoReconnect
 
 from core import (
     BACKOFF,
+    Configurable,
     RETRIES,
 )
 
@@ -41,23 +42,38 @@ def retry_on_reconnect(retries=RETRIES, backoff=BACKOFF):
     return wrapper
 
 
-class Mongo:
+class Mongo(Configurable):
+    """Mongo."""
 
-    def __init__(self, uri: str, name: str, collections_map: dict):
+    @classmethod
+    def from_cfg(cls, cfg):
+        """Return model from cfg."""
+        collection = cfg['collection']
+        collection_cls_name = '_Collection' + uuid4().hex
+        collection_cls = namedtuple(collection_cls_name, collection.keys())
+        kwargs = {
+            key: cast(cfg[key])
+            for key, cast in (
+                ('uri', str)
+                ('collection', collection_cls),)}
+        kwargs['collection_cls'] = collection_cls
+        return cls(**kwargs)
+
+    def __init__(self, uri: str, collection: dict, collection_cls):
         self.uri = uri
-        self.collections_map = collections_map
+        self._collection = collection
+        self._collection_cls = collection_cls
         self.reconnects = 0
-        self.collections_cls = namedtuple(name, collections_map.keys())
 
     @contextmanager
-    def collections(self):
-        """Collections contextmanager."""
+    def collection(self):
+        """Collection contextmanager."""
         with self.database() as database:
             kwargs = {
                 key: database[value]
-                for key, value in self.collections_map
+                for key, value in self._collection.items()
             }
-            yield self.collections_cls(**kwargs)
+            yield self._collection_cls(**kwargs)
 
     @contextmanager
     def connection(self):

@@ -40,7 +40,21 @@ def unpickle_from_file(file_name):
         return load(f)
 
 
-class Model:
+class Configurable:
+    """Configurable."""
+
+    @classmethod
+    def from_cfg(cls, cfg):
+        """Return model from cfg."""
+        raise NotImplementedError()
+
+    @classmethod
+    def patch_args(cls, cfg, args) -> None:
+        """Patch args into cfg"""
+        pass
+
+
+class Model(Configurable):
     """Model."""
     pass
 
@@ -58,16 +72,19 @@ class Microservice:
         assert key is not None
 
         with open(key) as fin:
-            return yaml_loads(fin.read())
+            cfg yaml_loads(fin.read())
+
+        cls.patch_args(cfg, args)
+        return cfg
 
     @classmethod
     def from_argv(cls, argv):
-        """Return an object from command line and environment variables."""
+        """Return microservice from command line and environment variables."""
         return cls.from_cfg(cls.cfg_from_args(cls.parse_args(argv)))
 
     @classmethod
     def from_cfg(cls, cfg):
-        """Return an object from cfg."""
+        """Return microservice from cfg."""
         raise NotImplementedError()  # pragma: no cover
 
     @classmethod
@@ -84,6 +101,11 @@ class Microservice:
                 kwargs['default'] = default
             parser.add_argument(arg, **kwargs)
         return parser.parse_args(argv)
+
+    @classmethod
+    def patch_args(cls, cfg, args):
+        """Patch cfg from args."""
+        raise NotImplementedError()
 
 
 class Scheduled(Microservice):
@@ -104,12 +126,12 @@ class Scheduled(Microservice):
 
     def __init__(
             self,
-            inputs, outputs, model,
+            input, output, model,
             scheduled_time,
             resolution):
         """Initialize microservice."""
-        self.inputs = inputs
-        self.outputs = outputs
+        self.input = input
+        self.output = output
         self.model = model
         self.scheduled_time = scheduled_time
         self.resolution = resolution
@@ -118,11 +140,8 @@ class Scheduled(Microservice):
         """Run microservice."""
         old_value = None
 
-        for each in outputs:
-            each.ping()
-
-        for each in inputs:
-            each.ping()
+        self.output.ping()
+        self.input.ping()
 
         while True:
             run_pending()
@@ -140,12 +159,9 @@ class Scheduled(Microservice):
 
     def run(self):
         """Run the model."""
-        raise NotImplementedError()  # pragme: no cover
-        # self.model(self.inputs, self.outputs, ...)
+        raise NotImplementedError()  # pragma: no cover
 
 
 class Intervaled(Microservice):
     """Intervaled microservice."""
-
-
-
+    pass

@@ -18,13 +18,20 @@ from _mssql import (
     MssqlDriverException,
 )
 
+from .core import (
+    BACKOFF,
+    Configurable,
+    RETRIES,
+)
+
 # pylint: disable=invalid-name
 MssqlException = (MssqlDatabaseException, MssqlDriverException)
 
-from .core import (
-    BACKOFF,
-    RETRIES,
-)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=stdout)
+logger = logging.getLogger(__name__)
 
 
 def retry_on_operational_error(retries=RETRIES, backoff=BACKOFF):
@@ -52,7 +59,8 @@ def retry_on_operational_error(retries=RETRIES, backoff=BACKOFF):
     return wrapper
 
 
-class Mssql:
+class Mssql(Configurable):
+    """Mssql."""
 
     def __init__(self, dsn):
         self.dsn = dsn

@@ -6,11 +6,11 @@
 
 ## Jupyter with Mongo:
 
-    $ docker-compose run --rm jupyter
+    $ docker-compose run --rm --service-ports jupyter
 
 ## Microservice with Mongo:
 
-    $ docker-compose run --rm microservice
+    $ docker-compose run --rm --service-ports microservice
 
 ## Both with Mongo:
 

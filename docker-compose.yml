@@ -3,10 +3,12 @@ services:
 
   mongo:
     image: mongo:4.0.2
-    stop_signal: SIGINT
+    expose:
+    - "27017"
     ports:
     - "27017:27017"
     restart: always
+    stop_signal: SIGINT
     # volumes:
     # - ./data/db:/data/db  # durable data
     command: [--noauth, --smallfiles, --quiet]
@@ -25,7 +27,7 @@ services:
     - ./:/tmp
     working_dir: /tmp
     entrypoint: [/sbin/tini, --]
-    command: [jupyter, lab, --allow-root, --ip=0.0.0.0, --port=8888, --no-browser, --notebook-dir=/tmp]
+    command: [jupyter, lab, --ip=0.0.0.0, --port=8888, --no-browser, --allow-root, --notebook-dir=/tmp]
 
   microservice:
     build: .

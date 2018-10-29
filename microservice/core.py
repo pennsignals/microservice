@@ -98,6 +98,11 @@ class Microservice:
         raise NotImplementedError()  # pragma: no cover
 
     @classmethod
+    def main(cls):
+        i = cls.from_argv(sys_argv[1:])
+        i()
+
+    @classmethod
     def parse_args(cls, argv: list) -> Namespace:
         """Return parsed args from command line and environment variables."""
         parser = ArgumentParser(description=cls.DESCRIPTION)

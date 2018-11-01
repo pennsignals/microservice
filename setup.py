@@ -63,7 +63,7 @@ setup(
     long_description=get_long_description(),
     long_description_content_type='text/markdown',
     packages=find_packages(exclude=('tests', 'tests.*')),
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     setup_requires=('pytest-runner', 'setuptools_scm'),
     tests_require=TESTS_REQUIRE,
     url='https://github.com/pennsignals/microservice',

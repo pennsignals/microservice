@@ -106,7 +106,6 @@ class Output(Mongo):
         ('OUTPUT_URI', '-output-uri'): {
             'dest': 'output_uri',
             'help': 'Mongo output uri.',
-            'nargs': 1,
             'type': str,
         },
     }

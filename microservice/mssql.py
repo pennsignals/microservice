@@ -90,11 +90,10 @@ class Mssql(Configurable):
     @contextmanager
     def commit(self):
         """Mssql commit contextmanager."""
-        connection = MssqlConnection(*self.dsn)
-        logger.info('{"mssql.open"}')
-        with closing(connection):
+        with MssqlConnection(*self.dsn) as connection:
+            logger.info('{"mssql.open"}')
             try:
-                with closing(connection.cursor()) as cursor:
+                with connection.cursor() as cursor:
                     yield cursor
                 connection.commit()
             except Exception:
@@ -106,11 +105,10 @@ class Mssql(Configurable):
     @contextmanager
     def rollback(self):
         """Mssql rollback contextmanager."""
-        connection = MssqlConnection(*self.dsn)
-        logger.info('{"mssql.open"}')
-        with closing(connection):
+        with MssqlConnection(*self.dsn) as connection:
+            logger.info('{"mssql.open"}')
             try:
-                with closing(connection.cursor()) as cursor:
+                with connection.cursor() as cursor:
                     yield cursor
             finally:
                 connection.rollback()
@@ -118,4 +116,14 @@ class Mssql(Configurable):
 
     def ping(self):
         """Ping mssql on startup."""
-        raise NotImplementedError()
+        with self.rollback() as cursor:
+            if self._ping(cursor):
+                return
+        raise Exception('No mssql')
+
+    @retry_on_operational_error()
+    def _ping(self, cursor):
+        cursor.execute('''select 1 as n''')
+        for _ in cursor.fetchall():
+            return True
+        return False

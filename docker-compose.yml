@@ -34,6 +34,7 @@ services:
     depends_on:
     - mongo
     environment:
-    - MONGO_URI=mongodb://mongo/tests
+    # - INPUT_URI=mongodb://mongo/tests
+    - OUTPUT_URI=mongodb://mongo/tests
     working_dir: /tmp
-    entrypoint: ["microservice"]  # see setup.py console_scripts
+    entrypoint: ["microservice.run_once_now"]  # see setup.py console_scripts

@@ -44,8 +44,12 @@ setup(
     ),
     entry_points={
         'console_scripts': (
-            'microservice = microservice:Microservice.main',
-            'microservice.job = microservice:Microservice.job',
+            (
+                'microservice = '
+                'microservice:Microservice.run_on_schedule'),
+            (
+                'microservice.run_once_now = '
+                'microservice:Microservice.run_once_now'),
         ),
     },
     extras_require={

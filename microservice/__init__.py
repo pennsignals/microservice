@@ -172,6 +172,16 @@ class Output(Mongo):
 class Model(Configurable):
     """Model."""
 
+    @classmethod
+    def from_cfg(cls, cfg: dict) -> object:
+        """Return model from cfg."""
+        return cls()
+
+    @classmethod
+    def patch_args(cls, cfg: dict, args) -> None:
+        """Patch cfg from args."""
+        pass
+
     @garbage_collection
     def __call__(self, input, output):  # pylint: disable=redefined-builtin
         """Run model."""

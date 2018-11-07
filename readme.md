@@ -19,3 +19,24 @@
 # Shutdown
 
     $ docker-compose down
+
+# Workflow
+
+## Import python modules:
+
+The project (where setup.py and the default location for notebooks exist) is not the same as the python module (the nested directory named `microservice`). To import python modules from the microservice, run this snippet in you jupyter notebook:
+
+```python
+import sys
+sys.path.append('./microservice')
+```
+
+... and then import python modules like this:
+
+```python
+from microservice import (
+	Input,
+	Output,
+	Microservice
+)
+```

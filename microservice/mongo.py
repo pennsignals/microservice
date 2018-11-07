@@ -70,14 +70,23 @@ class Mongo(Configurable):
         """Return model from cfg."""
         collection = cfg['collection']
         collection_cls_name = '_Collection' + uuid4().hex
-        collection_cls = namedtuple(collection_cls_name, collection.keys())
+
+        class Collection(namedtuple(
+                collection_cls_name, collection.keys())):
+            """Collection."""
+
+            @classmethod
+            def from_cfg(cls, cfg: dict) -> object:
+                """Return collection from cfg."""
+                return cls(**cfg)
+
         kwargs = {
             key: cast(cfg[key])
             for key, cast in (
                 ('uri', str),
-                ('collection', collection_cls),
+                ('collection', Collection.from_cfg),
             )}
-        kwargs['collection_cls'] = collection_cls
+        kwargs['collection_cls'] = Collection
         return cls(**kwargs)
 
     def __init__(self, uri: str, collection: dict, collection_cls):

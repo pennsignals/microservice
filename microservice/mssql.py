@@ -76,9 +76,6 @@ class Mssql(Configurable):
     def query2df(cls, cursor, query, *args):
         cursor.execute(query, *args)
         columns = (each[0] for each in cursor.description)
-        # how to set metadata for null columns?
-        # datatypes = (each[1] for each in cursor.description)
-        # but these are probably surely mssql datatypes and not python types
         df = DataFrame(cursor.fetchall())
         df.columns = columns
         return df
@@ -91,7 +88,7 @@ class Mssql(Configurable):
     def commit(self):
         """Mssql commit contextmanager."""
         with MssqlConnection(*self.dsn) as connection:
-            logger.info('{"mssql.open"}')
+            logger.info('{"mssql": "open"}')
             try:
                 with connection.cursor() as cursor:
                     yield cursor
@@ -100,19 +97,19 @@ class Mssql(Configurable):
                 connection.rollback()
                 raise
             finally:
-                logger.info('{"mssql.close"}')
+                logger.info('{"mssql": "close"}')
 
     @contextmanager
     def rollback(self):
         """Mssql rollback contextmanager."""
         with MssqlConnection(*self.dsn) as connection:
-            logger.info('{"mssql.open"}')
+            logger.info('{"mssql": "open"}')
             try:
                 with connection.cursor() as cursor:
                     yield cursor
             finally:
                 connection.rollback()
-                logger.info('{"mssql.close"}')
+                logger.info('{"mssql": "close"}')
 
     def ping(self):
         """Ping mssql on startup."""

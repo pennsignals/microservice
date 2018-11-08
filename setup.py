@@ -1,4 +1,4 @@
-"""Setup microservice."""
+"""Setup project."""
 
 from os.path import join
 from setuptools import (
@@ -31,7 +31,7 @@ def get_long_description(file_name='readme.md'):
 
 
 setup(
-    name='microservice',
+    name='project',
     author='Penn Medicine Predictive Healthcare',
     version='1.0',
     classifiers=(
@@ -41,11 +41,11 @@ setup(
     entry_points={
         'console_scripts': (
             (
-                'microservice = '
-                'microservice:Microservice.run_on_schedule'),
+                'project = '
+                'project:Microservice.run_on_schedule'),
             (
-                'microservice.run_once_now = '
-                'microservice:Microservice.run_once_now'),
+                'project.run_once_now = '
+                'project:Microservice.run_once_now'),
         ),
     },
     extras_require={

@@ -17,11 +17,11 @@ from .core import (
 )
 from .mongo import (
     Mongo,
-    retry_on_reconnect,  # pylint: disable=unused-import
+    # retry_on_reconnect,
 )
 from .mssql import (
     Mssql,
-    retry_on_operational_error,  # pylint: disable=unused-import
+    # retry_on_operational_error,
 )
 
 
@@ -47,11 +47,6 @@ class Input(Mssql):
     ARGS = {
         **INPUT_DSN,
     }
-
-    @classmethod
-    def from_cfg(cls, cfg: dict) -> object:
-        """Return model from cfg."""
-        raise NotImplementedError()
 
     @classmethod
     def patch_args(cls, cfg: dict, args: Namespace) -> None:

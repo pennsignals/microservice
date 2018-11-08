@@ -1,9 +1,6 @@
 """Mssql."""
 
-from contextlib import (
-    closing,
-    contextmanager,
-)
+from contextlib import contextmanager
 from functools import wraps
 from logging import (  # pylint: disable=unused-import
     basicConfig,
@@ -73,7 +70,22 @@ class Mssql(Configurable):
     """Mssql."""
 
     @classmethod
+    def from_cfg(cls, cfg: dict) -> object:
+        """Return model from cfg."""
+        kwargs = {
+                key: cast(cfg[key])
+                for key: cast in (
+                ('dsn', list),
+            )}
+        value = kwargs['dsn']
+        assert len(kwargs['dsn']) == 4
+        for each in value:
+            assert isinstance(each, str)
+        return cls(**kwargs)
+
+    @classmethod
     def query2df(cls, cursor, query, *args):
+        """Query to data frame."""
         cursor.execute(query, *args)
         columns = (each[0] for each in cursor.description)
         df = DataFrame(cursor.fetchall())
@@ -81,6 +93,7 @@ class Mssql(Configurable):
         return df
 
     def __init__(self, dsn):
+        """Initialize mssql."""
         self.dsn = dsn
         self.reconnects = 0
 

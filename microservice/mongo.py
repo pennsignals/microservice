@@ -8,9 +8,9 @@ from contextlib import (
 from functools import wraps
 from logging import (  # pylint: disable=unused-import
     basicConfig,
-    DEBUG,
+    DEBUG,  # noqa: N401
     getLogger,
-    INFO,
+    INFO,  # noqa: N401
 )
 from sys import stdout
 from time import sleep as block
@@ -71,7 +71,7 @@ class Mongo(Configurable):
         collection = cfg['collection']
         collection_cls_name = '_Collection' + uuid4().hex
 
-        class Collection(namedtuple(
+        class Collection(namedtuple(  # pylint: disable=too-few-public-methods
                 collection_cls_name, collection.keys())):
             """Collection."""
 

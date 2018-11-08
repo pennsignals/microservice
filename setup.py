@@ -1,10 +1,6 @@
 """Setup microservice."""
 
-from datetime import date
-from os.path import (
-    exists,
-    join,
-)
+from os.path import join
 from setuptools import (
     find_packages,
     setup,
@@ -30,8 +26,8 @@ TESTS_REQUIRE = (
 
 def get_long_description(file_name='readme.md'):
     """Get long description."""
-    with open(join(file_name), encoding='utf-8') as f:
-        return f.read()
+    with open(join(file_name), encoding='utf-8') as readme:
+        return readme.read()
 
 
 setup(

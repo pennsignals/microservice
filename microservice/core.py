@@ -65,7 +65,7 @@ class Configurable:
 
     @classmethod
     def patch_args(cls, cfg: dict, args: Namespace) -> None:
-        """Patch args into cfg"""
+        """Patch args into cfg."""
         pass
 
 
@@ -99,6 +99,7 @@ class Microservice:
 
     @classmethod
     def main(cls):
+        """Main."""
         i = cls.from_argv(sys_argv[1:])
         i()
 
@@ -181,4 +182,5 @@ class Scheduled(Microservice):  # pylint: disable=abstract-method
 class Intervaled(Microservice):
     """Intervaled microservice."""
     # pylint: disable=abstract-method,too-few-public-methods
+
     pass

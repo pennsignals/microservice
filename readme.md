@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/pennsignals/microservice.svg?token=FIXME&branch=master)](https://travis-ci.com/pennsignals/microservice)
+[![Build Status](https://travis-ci.com/pennsignals/microservice.svg?branch=master)](https://travis-ci.com/pennsignals/microservice)
 [![Container Status](https://quay.io/repository/pennsignals/microservice/status?token=FIXME "Docker Repository on Quay")](https://quay.io/repository/pennsignals/microservice)
 
 
@@ -19,6 +19,10 @@
 # Shutdown
 
     $ docker-compose down
+
+# Unit Test
+
+    $ docker-compose -f docker-compose.unit.test.cfg build && docker-compose -f docker-compose.unit.test.cfg  run --rm unit_test
 
 # Workflow
 

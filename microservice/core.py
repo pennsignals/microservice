@@ -181,6 +181,6 @@ class Scheduled(Microservice):  # pylint: disable=abstract-method
 
 class Intervaled(Microservice):
     """Intervaled microservice."""
-    # pylint: disable=abstract-method,too-few-public-methods
 
+    # pylint: disable=abstract-method,too-few-public-methods
     pass

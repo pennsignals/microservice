@@ -2,9 +2,9 @@
 
 from contextlib import contextmanager
 from functools import wraps
-from logging import (  # pylint: disable=unused-import
+from logging import (
     basicConfig,
-    DEBUG,
+    # DEBUG,
     getLogger,
     INFO,
 )
@@ -73,8 +73,8 @@ class Mssql(Configurable):
     def from_cfg(cls, cfg: dict) -> object:
         """Return model from cfg."""
         kwargs = {
-                key: cast(cfg[key])
-                for key: cast in (
+            key: cast(cfg[key])
+            for key, cast in (
                 ('dsn', list),
             )}
         value = kwargs['dsn']
@@ -132,7 +132,7 @@ class Mssql(Configurable):
         raise Exception('No mssql')
 
     @retry_on_operational_error()
-    def _ping(self, cursor):
+    def _ping(self, cursor):  # pylint: disable=no-self-use
         cursor.execute('''select 1 as n''')
         for _ in cursor.fetchall():
             return True

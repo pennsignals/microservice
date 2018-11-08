@@ -6,11 +6,11 @@ from contextlib import (
     contextmanager,
 )
 from functools import wraps
-from logging import (  # pylint: disable=unused-import
+from logging import (
     basicConfig,
-    DEBUG,  # noqa: N401
+    # DEBUG,
     getLogger,
-    INFO,  # noqa: N401
+    INFO,
 )
 from sys import stdout
 from time import sleep as block
@@ -122,4 +122,4 @@ class Mongo(Configurable):
 
     def ping(self):
         """Ping mssql on startup."""
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover

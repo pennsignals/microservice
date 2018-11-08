@@ -5,6 +5,6 @@ COPY requirements.txt .
 COPY setup.py .
 COPY setup.cfg .
 COPY local ./local
-COPY microservice ./microservice
+COPY project ./project
 COPY tests ./tests
 RUN pip install --no-cache-dir --requirement requirements.txt

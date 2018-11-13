@@ -1,14 +1,12 @@
 [BASIC]
 good-names=df,i,ok,logger,ts,v
 
-
-[MASTER]
-ignore = handlers.py
-
-
 [MESSAGES CONTROL]
 disable=duplicate-code
 
+[MISCELLANEOUS]
+# List of note tags to take in consideration, separated by a comma.
+notes=FIXME,XXX
 
 [SIMILARITIES]
 

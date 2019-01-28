@@ -66,7 +66,7 @@ class Configurable:
     @classmethod
     def patch_args(cls, cfg: dict, args: Namespace) -> None:
         """Patch args into cfg."""
-        pass
+        # pylint: disable=abstract-method
 
 
 class Microservice:
@@ -183,4 +183,3 @@ class Intervaled(Microservice):
     """Intervaled microservice."""
 
     # pylint: disable=abstract-method,too-few-public-methods
-    pass

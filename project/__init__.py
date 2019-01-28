@@ -174,7 +174,7 @@ class Model(Configurable):
     @classmethod
     def patch_args(cls, cfg: dict, args) -> None:
         """Patch cfg from args."""
-        pass
+        # pylint: disable=abstract-method
 
     @garbage_collection
     def __call__(self, input, output):  # pylint: disable=redefined-builtin

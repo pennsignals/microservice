@@ -7,6 +7,7 @@ from setuptools import (
 )
 
 TESTS_REQUIRE = (
+    'flake8==3.6.0',  # flake8 3.7.1 incompatible with pytest-flake8
     'flake8-bugbear',
     'flake8-commas',
     'flake8-comprehensions',

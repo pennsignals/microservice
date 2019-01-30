@@ -19,7 +19,7 @@ jobs:
           name: push to quay.io after tests pass
           command: |
             docker login quay.io -u $QUAY_USER -p $QUAY_PASS
-            docker push pennsignals/microservice:$CIRCLE_BUILD_NUM
+            docker push quay.io/pennsignals/microservice:$CIRCLE_BUILD_NUM
 
 workflows:
   version: 2

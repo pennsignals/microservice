@@ -9,9 +9,22 @@ jobs:
           docker_layer_caching: true
       - run:
           name: build application image
-          command: 'docker build -t pennsignals/app-image .'
+          command: docker build -t pennsignals/microservice:$CIRCLE_BUILD_NUM .
           no_output_timeout: 1200
       - run:
-          name: Test
+          name: run tests in setup.py
           command: docker run -it --rm pennsignals/app-image  /bin/ash -c 'COVERAGE_STORAGE=json python setup.py test'
           no_output_timeout: 1200
+      - run:
+          name: push to quay.io after tests pass
+          command: |
+            docker login quay.io -u $QUAY_USER -p $QUAY_PASS
+            docker push pennsignals/microservice:$CIRCLE_BUILD_NUM
+
+workflows:
+  version: 2
+  build-test-push:
+    jobs:
+      - build:
+          context: Quay.io
+

@@ -7,6 +7,11 @@ from setuptools import (
 )
 
 
+CLASSIFIERS = (
+    'Development Status :: 3 - Alpha',
+    'Programming Language :: Python :: 3',
+)
+
 INSTALL_REQUIRES = (
     # 'curio @ git+https://github.com/dabeaz/curio.git@master#egg=curio-0.10',
     'pymongo',
@@ -71,10 +76,7 @@ def long_description(file_name='readme.md'):
 setup(
     name='project',
     author='Penn Medicine Predictive Healthcare',
-    classifiers=(
-        'Development Status :: 3 - Alpha',
-        'Programming Language :: Python :: 3',
-    ),
+    classifiers=list(CLASSIFIERS),
     entry_points={
         'console_scripts': (
             (

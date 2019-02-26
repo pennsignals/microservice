@@ -86,14 +86,12 @@ class Mongo(Configurable):
                 ('uri', str),
                 ('collection', Collection.from_cfg),
             )}
-        kwargs['collection_cls'] = Collection
         return cls(**kwargs)
 
-    def __init__(self, uri: str, collection: dict, collection_cls):
+    def __init__(self, uri: str, collection: dict):
         """Initialize Mongo."""
         self.uri = uri
         self._collection = collection
-        self._collection_cls = collection_cls
         self.reconnects = 0
 
     @contextmanager
@@ -104,7 +102,7 @@ class Mongo(Configurable):
                 key: database[value]
                 for key, value in self._collection.items()
             }
-            yield self._collection_cls(**kwargs)
+            yield self._collection.__class__(**kwargs)
 
     @contextmanager
     def connection(self):

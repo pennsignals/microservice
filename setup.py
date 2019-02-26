@@ -6,8 +6,24 @@ from setuptools import (
     setup,
 )
 
+
+INSTALL_REQUIRES = (
+    # 'curio @ git+https://github.com/dabeaz/curio.git@master#egg=curio-0.10',
+    'pymongo',
+    'pytz',
+    'pyyaml',
+    'pyzmq',
+)
+
+SETUP_REQUIRES = (
+    'pytest-runner',
+    'setuptools-scm',
+    'setuptools-scm-git-archive',
+)
+
 TESTS_REQUIRE = (
-    'flake8==3.6.0',  # flake8 3.7.1 incompatible with pytest-flake8
+    'autocoverage',
+    'flake8',
     'flake8-bugbear',
     'flake8-commas',
     'flake8-comprehensions',
@@ -25,16 +41,36 @@ TESTS_REQUIRE = (
 )
 
 
-def get_long_description(file_name='readme.md'):
-    """Get long description."""
-    with open(join(file_name), encoding='utf-8') as readme:
-        return readme.read()
+def extras_require(
+        install_requires=INSTALL_REQUIRES,
+        tests_require=TESTS_REQUIRE):
+    """Extras require."""
+    result = {
+        'adt': (),
+        'flowsheet': (),
+        'labs': (),
+        'med': (),
+        'order': (),
+    }
+
+    result['all'] = install_requires + tuple(
+        value
+        for values in result.values()
+        for value in values)
+
+    result['test'] = tests_require
+    return result
+
+
+def long_description(file_name='readme.md'):
+    """Long description."""
+    with open(join(file_name), encoding='utf-8') as desc:
+        return desc.read()
 
 
 setup(
     name='project',
     author='Penn Medicine Predictive Healthcare',
-    version='1.0',
     classifiers=(
         'Development Status :: 3 - Alpha',
         'Programming Language :: Python :: 3',
@@ -49,24 +85,16 @@ setup(
                 'project:Microservice.run_once_now'),
         ),
     },
-    extras_require={
-        'tests': TESTS_REQUIRE,
-    },
+    extras_require=extras_require(),
     include_package_data=True,
-    install_requires=(
-        'numpy',
-        'pandas',
-        'pymongo',
-        'pymssql',
-        'pyyaml',
-        'schedule',
-    ),
-    long_description=get_long_description(),
+    install_requires=INSTALL_REQUIRES,
+    long_description=long_description(),
     long_description_content_type='text/markdown',
-    packages=find_packages(exclude=('tests', 'tests.*')),
+    packages=find_packages(where='src'),
+    package_dir={'': 'src'},
     python_requires='>=3.7',
-    setup_requires=('pytest-runner', 'setuptools_scm'),
+    setup_requires=SETUP_REQUIRES,
     tests_require=TESTS_REQUIRE,
     url='https://github.com/pennsignals/microservice',
-    # use_scm_version=True
+    use_scm_version={'write_to': 'src/project/version.py'},
 )

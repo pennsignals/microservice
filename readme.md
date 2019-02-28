@@ -6,22 +6,22 @@
 Create an private empty git repo for your project on github:
 - `git clone git@github.com:pennsignals/microservice.git <project>`
 - Update `.git/config` line `url = git@github.com:pennsignals/microservice.git` to `git@github.com:pennsignals/<project>.git`
-- `git mv project <project>`
+- `git mv src/project src/<project>`
 - Update `setup.cfg` line `--cov project` to `--cov <project>`
 - Update `setup.py` line `url=https://github.com/pennsignals/microservice` to `https://github.com/pennsignals/<project>`
+- Update the path of the excluded file `version.py` in `setup.cfg` for flake8.
 - Update `setup.py` console scripts for project:
 ```
         'console_scripts': (
             (
                 '<project> = '
-                '<project>:Microservice.run_on_schedule'),
+                '<project>:Micro.run_on_schedule'),
             (
                 '<project>.run_once_now = '
-                '<project>:Microservice.run_once_now'),
+                '<project>:Micro.run_once_now'),
         ),
 
 ```
-- Update `dockerfile` line `COPY microservice ./microservice` to `COPY <project> ./<project>`
 - Update `production.nomad` replacing `project` with `<project>`
 - Inspect `production.nomad` secrets and update `predict` or `clarity` with appropriate names for you project
 - Update the Build Status badge at the top of this file: `https://travis-ci.com/pennsignals/microservice.svg?branch=master` to `https://travis-ci.com/pennsignals/<project>.svg?branch=master`
@@ -58,13 +58,13 @@ The project (where setup.py and the default location for notebooks exist) is not
 
 ```python
 import sys
-sys.path.append('./microservice')
+sys.path.append('./src/<project>')
 ```
 
 ... and then import python modules like this:
 
 ```python
-from microservice import (
+from <project> import (
 	Input,
 	Output,
 	Microservice

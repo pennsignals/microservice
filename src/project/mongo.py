@@ -102,7 +102,7 @@ class Mongo(Configurable):
         with self.database() as database:
             kwargs = {
                 key: database[value]
-                for key, value in self._collection.items()
+                for key, value in self._collection._asdict().items()
             }
             yield self._collection_cls(**kwargs)
 

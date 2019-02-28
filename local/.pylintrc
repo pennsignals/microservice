@@ -1,6 +1,9 @@
 [BASIC]
 good-names=df,i,ok,logger,ts,v
 
+[MASTER]
+ignore = version.py
+
 [MESSAGES CONTROL]
 disable=duplicate-code
 

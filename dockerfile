@@ -1,10 +1,11 @@
-FROM quay.io/pennsignals/alpine-3.8-python-3.7-datascience-mssql:v1.0
+FROM quay.io/pennsignals/alpine-3.8-python-3.7-datascience-mssql:v3.0
 WORKDIR /tmp
-COPY readme.md .
-COPY requirements.txt .
-COPY setup.py .
-COPY setup.cfg .
+COPY .git ./.git
 COPY local ./local
-COPY project ./project
+COPY src ./src
 COPY tests ./tests
-RUN pip install --no-cache-dir --requirement requirements.txt
+COPY readme.md .
+COPY setup.cfg .
+COPY setup.py .
+RUN apk add git && \
+    pip install --no-cache-dir "."

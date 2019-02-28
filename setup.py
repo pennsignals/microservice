@@ -6,6 +6,26 @@ from setuptools import (
     setup,
 )
 
+
+CLASSIFIERS = (
+    'Development Status :: 3 - Alpha',
+    'Programming Language :: Python :: 3',
+)
+
+INSTALL_REQUIRES = (
+    'numpy',
+    'pandas',
+    'pymongo',
+    'pymssql',
+    'pyyaml',
+    'schedule',
+)
+
+SETUP_REQUIRES = (
+    'pytest-runner',
+    'setuptools_scm',
+)
+
 TESTS_REQUIRE = (
     'flake8==3.6.0',  # flake8 3.7.1 incompatible with pytest-flake8
     'flake8-bugbear',
@@ -25,8 +45,8 @@ TESTS_REQUIRE = (
 )
 
 
-def get_long_description(file_name='readme.md'):
-    """Get long description."""
+def long_description(file_name='readme.md'):
+    """Return long description."""
     with open(join(file_name), encoding='utf-8') as readme:
         return readme.read()
 
@@ -34,11 +54,7 @@ def get_long_description(file_name='readme.md'):
 setup(
     name='project',
     author='Penn Medicine Predictive Healthcare',
-    version='1.0',
-    classifiers=(
-        'Development Status :: 3 - Alpha',
-        'Programming Language :: Python :: 3',
-    ),
+    classifiers=list(CLASSIFIERS),
     entry_points={
         'console_scripts': (
             (
@@ -53,20 +69,14 @@ setup(
         'tests': TESTS_REQUIRE,
     },
     include_package_data=True,
-    install_requires=(
-        'numpy',
-        'pandas',
-        'pymongo',
-        'pymssql',
-        'pyyaml',
-        'schedule',
-    ),
-    long_description=get_long_description(),
+    install_requires=INSTALL_REQUIRES,
+    long_description=long_description(),
     long_description_content_type='text/markdown',
-    packages=find_packages(exclude=('tests', 'tests.*')),
+    packages=find_packages(where='src'),
+    package_dir={'': 'src'},
     python_requires='>=3.7',
-    setup_requires=('pytest-runner', 'setuptools_scm'),
+    setup_requires=SETUP_REQUIRES,
     tests_require=TESTS_REQUIRE,
     url='https://github.com/pennsignals/microservice',
-    # use_scm_version=True
+    use_scm_version={'write_to': 'src/project/version.py'},
 )

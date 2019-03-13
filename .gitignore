@@ -115,3 +115,7 @@ venv/
 **/secrets
 !/secrets/readme.md
 !/secrets/example.env
+
+# ignore version generated from scm_version
+
+version.py

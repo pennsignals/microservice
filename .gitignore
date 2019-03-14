@@ -107,10 +107,11 @@ venv/
 **/local
 !/local/.pylintrc
 !/local/readme.md
-!/local/example.cfg
-!/local/production.cfg
-!/local/staging.cfg
-!/local/unit.test.cfg
+!/local/example.yml
+!/local/production.yml
+!/local/staging.yml
+!/local/unit.test.yml
+!/local/system.test.yml
 
 **/secrets
 !/secrets/readme.md

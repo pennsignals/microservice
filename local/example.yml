@@ -4,8 +4,8 @@ input:
     batch: signal_lab_event_sets
 output:
   collection:
-    event: signal_microservice_prediction_events
-    batch: signal_microservice_prediction_event_sets
+    event: prediction_events
+    batch: prediction_event_sets
 model:
 resolution: 1.0
 scheduled_time: "10:30"

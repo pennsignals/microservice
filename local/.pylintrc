@@ -1,5 +1,5 @@
 [BASIC]
-good-names=df,i,ok,logger,ts,v
+good-names=df,e,f,i,ok,logger,ts,v
 
 [MASTER]
 ignore = version.py

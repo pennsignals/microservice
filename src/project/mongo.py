@@ -1,14 +1,11 @@
 """Mongo."""
 
+from __future__ import annotations
 from collections import namedtuple
-from contextlib import (
-    closing,
-    contextmanager,
-)
+from contextlib import contextmanager
 from functools import wraps
 from logging import (
     basicConfig,
-    # DEBUG,
     getLogger,
     INFO,
 )
@@ -19,9 +16,9 @@ from uuid import uuid4
 from pymongo import MongoClient
 from pymongo.errors import AutoReconnect
 
-from .core import (
+from .configurable import Configurable
+from .constants import (
     BACKOFF,
-    Configurable,
     RETRIES,
 )
 
@@ -30,7 +27,7 @@ basicConfig(
     level=INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     stream=stdout)
-logger = getLogger(__name__)
+logger = getLogger(__name__)  # pylint: disable=invalid-name
 
 
 def retry_on_reconnect(retries=RETRIES, backoff=BACKOFF):
@@ -38,23 +35,20 @@ def retry_on_reconnect(retries=RETRIES, backoff=BACKOFF):
 
     The pymongo client does not retry operations even when
         mongo reports auto reconnect is available.
-
-    The obj must have a reconnects property.
     """
     def wrapper(func):
         """Return wrapped method."""
         @wraps(func)
-        def wrapped(obj, *args, **kwargs):
+        def wrapped(*args, **kwargs):
             """Return method result."""
             try:
-                return func(obj, *args, **kwargs)
+                return func(*args, **kwargs)
             # coverage only with a replicaset and failover.
             except AutoReconnect as retry:
                 logger.exception(retry)
                 for i in range(retries):
-                    obj.reconnects += 1
                     try:
-                        return func(obj, *args, **kwargs)
+                        return func(*args, **kwargs)
                     except AutoReconnect:
                         block(backoff * i)
                 raise
@@ -62,11 +56,11 @@ def retry_on_reconnect(retries=RETRIES, backoff=BACKOFF):
     return wrapper
 
 
-class Mongo(Configurable):
-    """Mongo."""
+class Output(Configurable):
+    """Output."""
 
     @classmethod
-    def from_cfg(cls, cfg):
+    def from_cfg(cls, cfg) -> Output:
         """Return model from cfg."""
         collection = cfg['collection']
         collection_cls_name = '_Collection' + uuid4().hex
@@ -86,40 +80,51 @@ class Mongo(Configurable):
                 ('uri', str),
                 ('collection', Collection.from_cfg),
             )}
-        kwargs['collection_cls'] = Collection
         return cls(**kwargs)
 
-    def __init__(self, uri: str, collection: dict, collection_cls):
+    def __init__(
+            self,
+            uri: str,
+            collection: namedtuple) -> None:
         """Initialize Mongo."""
         self.uri = uri
         self._collection = collection
-        self._collection_cls = collection_cls
-        self.reconnects = 0
 
     @contextmanager
-    def collection(self):
+    def collection(self) -> None:
         """Contextmanager for collection."""
         with self.database() as database:
             kwargs = {
                 key: database[value]
                 for key, value in self._collection._asdict().items()
             }
-            yield self._collection_cls(**kwargs)
+            yield self._collection.__class__(**kwargs)
 
     @contextmanager
-    def connection(self):
+    def connection(self) -> None:
         """Contextmanager for connection."""
-        connection = MongoClient(self.uri)
-        with closing(connection):
-            yield connection
+        with MongoClient(self.uri) as connection:
+            logger.info('{"mongo": "open"}')
+            try:
+                yield connection
+            finally:
+                logger.info('{"mongo": "close"}')
 
     @contextmanager
-    def database(self):
+    def database(self) -> None:
         """Contextmanager for database."""
         with self.connection() as connection:
             database = connection.get_database()
-            yield database
+            logger.info(
+                '{"mongo.open": {"database": "%s"}}',
+                database.name)
+            try:
+                yield database
+            finally:
+                logger.info(
+                    '{"mongo.closed": {"database": "%s"}}',
+                    database.name)
 
-    def ping(self):
+    def ping(self) -> bool:
         """Ping mssql on startup."""
-        raise NotImplementedError()  # pragma: no cover
+        raise NotImplementedError()

@@ -101,22 +101,3 @@ venv/
 
 # mac
 .DS_Store
-
-# nomad / docker-compose secrets
-
-**/local
-!/local/.pylintrc
-!/local/readme.md
-!/local/example.yml
-!/local/production.yml
-!/local/staging.yml
-!/local/unit.test.yml
-!/local/system.test.yml
-
-**/secrets
-!/secrets/readme.md
-!/secrets/example.env
-
-# ignore version generated from scm_version
-
-version.py

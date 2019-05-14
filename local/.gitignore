@@ -1,0 +1,6 @@
+*
+!.gitignore
+!.pylintrc
+!configuration.yml
+!production.yml
+!staging.yml

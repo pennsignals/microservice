@@ -1,36 +1,47 @@
 job "project_staging" {
   datacenters = ["dc1"]
 
+  type = "batch"
+
+  periodic {
+    cron             = "00 05 * * *"
+    prohibit_overlap = true
+    time_zone        = "America/New_York"
+  }
+
   group "default" {
     vault {
       policies = ["project_staging"]
     }
 
     restart {
-      mode = "delay"
+      attempts = 30
+      delay    = "15s"
+      interval = "24h"
+      mode     = "fail"
     }
 
-    task "project_staging" {
+    task "project" {
       image = "quay.io/pennsignals/project:v1.0"
       command = "project"
       driver = "docker"
       env {
-        CONFIGURATION="/local/.cfg"
+        CONFIGURATION="/local/configuration.yml"
       }
       resources {
-        cpu    = 13776  # greater than half a node so it runs alone
-        memory = 4096  # more if needed
+        cpu    = 2048  # more if needed
+        memory = 1024  # more if needed
       }
       template {
         data = <<EOH
-{{key "project_staging/configuration.cfg"}}
+{{key "project_staging/configuration.yml"}}
 EOH
-        destination = "/local/.cfg"
+        destination = "/local/configuration.yml"
       }
       template {
         data = <<EOH
-INPUT_DSN="{{with secret "secret/mssql/project_staging/input_dsn"}}{{.Data.data}}{{end}}"
-OUTPUT_URI="{{with secret "secret/mongo/project_staging/output_uri"}}{{.Data.data}}{{end}}"
+INPUT_URI="{{with secret "secret/mssql/project_staging/input_uri"}}{{.Data.value}}{{end}}"
+OUTPUT_URI="{{with secret "secret/mongo/project_staging/output_uri"}}{{.Data.value}}{{end}}"
 EOH
         destination = "/secrets/.env"
         env         = true

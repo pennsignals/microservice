@@ -1,10 +1,10 @@
-"""Core."""
+"""Micro."""
 
+from __future__ import annotations
 from argparse import (
     ArgumentParser,
     Namespace,
 )
-from datetime import datetime
 from functools import wraps
 from pickle import load
 from gc import collect
@@ -14,21 +14,8 @@ from sys import (
     argv as sys_argv,
     stdout,
 )
-from time import sleep as block
 
-from schedule import (
-    every,
-    next_run,
-    run_pending,
-)
 from yaml import safe_load as yaml_loads
-
-
-CONNECT = True
-BACKOFF = 0.15
-ENCODING = 'utf-8'
-RETRIES = 5
-TZ_AWARE = True
 
 
 logging.basicConfig(
@@ -55,25 +42,22 @@ def unpickle_from_file(file_name):
         return load(fin)
 
 
-class Configurable:
-    """Configurable."""
+class Micro:
+    """Micro."""
 
-    @classmethod
-    def from_cfg(cls, cfg: dict) -> object:
-        """Return model from cfg."""
-        raise NotImplementedError()
+    CONFIGURATION = {
+        ('CONFIGURATION', '--cfg'): {
+            'dest': 'configuration',
+            'help': 'Yaml file for configuration.',
+            'type': str,
+        },
+    }
 
-    @classmethod
-    def patch_args(cls, cfg: dict, args: Namespace) -> None:
-        """Patch args into cfg."""
-        # pylint: disable=abstract-method
+    ARGS = {
+        **CONFIGURATION,
+    }
 
-
-class Microservice:
-    """Microservice."""
-
-    ARGS = {}
-    DESCRIPTION = 'Microservice'
+    DESCRIPTION = 'Micro'
 
     @classmethod
     def cfg_from_args(cls, args: Namespace) -> dict:
@@ -88,17 +72,17 @@ class Microservice:
         return cfg
 
     @classmethod
-    def from_argv(cls, argv) -> object:
+    def from_argv(cls, argv) -> Micro:
         """Return microservice from command line and environment variables."""
         return cls.from_cfg(cls.cfg_from_args(cls.parse_args(argv)))
 
     @classmethod
-    def from_cfg(cls, cfg: dict) -> object:
+    def from_cfg(cls, cfg: dict) -> Micro:
         """Return microservice from cfg."""
         raise NotImplementedError()  # pragma: no cover
 
     @classmethod
-    def main(cls):
+    def main(cls) -> None:
         """Main."""
         i = cls.from_argv(sys_argv[1:])
         i()
@@ -121,11 +105,11 @@ class Microservice:
     @classmethod
     def patch_args(cls, cfg: dict, args: Namespace) -> None:
         """Patch cfg from args."""
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
 
-class Scheduled(Microservice):  # pylint: disable=abstract-method
-    """Scheduled microservice."""
+class NomadScheduled(Micro):  # pylint: disable=abstract-method
+    """Nomad scheduled micro."""
 
     @classmethod
     def run_once_now(cls) -> None:
@@ -133,53 +117,22 @@ class Scheduled(Microservice):  # pylint: disable=abstract-method
         i = cls.from_argv(sys_argv[1:])
         i.run()
 
-    @classmethod
-    def run_on_schedule(cls) -> None:
-        """Run on schedule."""
-        i = cls.from_argv(sys_argv[1:])
-        every().day.at(i.scheduled_time).do(i.run)
-        i()
-
     def __init__(
             self,
-            input, output, model,
-            scheduled_time: str,
-            resolution: float):
-        # pylint: disable=too-many-arguments,redefined-builtin
+            input,  # pylint: disable=redefined-builtin
+            output,
+            model) -> None:
         """Initialize microservice."""
         self.input = input
         self.output = output
         self.model = model
-        self.scheduled_time = scheduled_time
-        self.resolution = resolution
 
-    def __call__(self) -> None:
-        """Run microservice."""
-        old_value = None
-
-        self.output.ping()
-        self.input.ping()
-
-        while True:
-            run_pending()
-            new_value = next_run()
-            now = datetime.now()
-            interval = max(
-                self.resolution,
-                (new_value - now).total_seconds() * 0.5)
-            if old_value != new_value:
-                logger.info(
-                    'Next scheduled run: %s, initial sleep interval is %s',
-                    new_value, interval)
-                old_value = new_value
-            block(interval)
+    def ping(self) -> None:
+        """Ping."""
+        assert self.output.ping(), 'Output did not ping.'
+        assert self.input.ping(), 'Input did not ping.'
 
     def run(self) -> None:
         """Run the model."""
-        raise NotImplementedError()  # pragma: no cover
-
-
-class Intervaled(Microservice):
-    """Intervaled microservice."""
-
-    # pylint: disable=abstract-method,too-few-public-methods
+        self.ping()
+        self.model(self.input, self.output)

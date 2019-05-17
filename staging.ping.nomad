@@ -1,10 +1,10 @@
-job "project_staging" {
+job "project_staging_ping" {
   datacenters = ["dc1"]
 
   type = "batch"
 
   periodic {
-    cron             = "00 05 * * *"
+    cron             = "* * * * *"
     prohibit_overlap = true
     time_zone        = "America/New_York"
   }
@@ -15,8 +15,8 @@ job "project_staging" {
     }
 
     restart {
-      attempts = 30
-      delay    = "15s"
+      attempts = 90
+      delay    = "5s"
       interval = "24h"
       mode     = "fail"
     }

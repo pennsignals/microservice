@@ -117,6 +117,12 @@ class NomadScheduled(Micro):  # pylint: disable=abstract-method
         i = cls.from_argv(sys_argv[1:])
         i.run()
 
+    @classmethod
+    def run_ping_now(cls) -> None:
+        """Run ping now."""
+        i = cls.from_argv(sys_argv[1:])
+        i.ping()
+
     def __init__(
             self,
             input,  # pylint: disable=redefined-builtin

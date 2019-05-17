@@ -57,12 +57,8 @@ setup(
     classifiers=list(CLASSIFIERS),
     entry_points={
         'console_scripts': (
-            (
-                'project = '
-                'project:Microservice.run_on_schedule'),
-            (
-                'project.run_once_now = '
-                'project:Microservice.run_once_now'),
+            'project = project:Micro.run_once_now',
+            'project.ping = project::Micro.run_ping_now',
         ),
     },
     extras_require={

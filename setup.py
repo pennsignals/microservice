@@ -1,4 +1,14 @@
-"""Setup project."""
+"""Setup project.
+
+Writing version.py allows the service to know its own version from git
+    without updating the code.
+
+However, git also knows that the code has been modified
+    (version.py has been written), so it always adds
+    dev+build hashes to the reported version.
+
+Clearly there is some way to have git ignore the file for scm.
+"""
 
 from os.path import join
 

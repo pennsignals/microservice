@@ -6,6 +6,8 @@ from argparse import Namespace
 from logging import INFO, basicConfig, getLogger
 from sys import stdout
 
+from pkg_resources import get_distribution, DistributionNotFound
+
 from .example_inputs import Inputs
 from .example_outputs import Outputs
 from .model import Model
@@ -17,6 +19,13 @@ basicConfig(
     stream=stdout,
 )
 logger = getLogger(__name__)
+
+
+try:
+    __version__ = get_distribution(__name__).version
+except DistributionNotFound:
+    # package is not installed
+    pass
 
 
 class Service(BaseService):

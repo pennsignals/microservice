@@ -1,29 +1,44 @@
-"""Model."""
+"""Model.
+
+Alter this model instance to
+
+"""
 
 from __future__ import annotations
-from logging import (
-    basicConfig,
-    getLogger,
-    INFO,
-)
-import pickle
+
+from argparse import Namespace
+from logging import INFO, basicConfig, getLogger
 from sys import stdout
 
 from .configurable import Configurable
-from .micro import garbage_collection
-
+from .example_inputs import InputBatch
+from .service import (
+    # unpickle_from_file,
+    garbage_collection,
+)
 
 basicConfig(
     level=INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    stream=stdout)
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=stdout,
+)
 logger = getLogger(__name__)
 
 
-def unpickle_from_file(file_name):
-    """Return unpickle from file."""
-    with open(file_name, 'rb') as f:
-        return pickle.load(f)
+class TransformBatch:  # pylint: disable=too-few-public-methods
+    """TransformBatch."""
+
+    def __init__(self, batch: InputBatch):
+        """Add parameters and properties to accumulate work."""
+        self.provenance = batch
+
+
+class PreditionBatch:  # pylint: disable=too-few-public-methods
+    """Predictions."""
+
+    def __init__(self, batch: TransformBatch):
+        """Add parameters and properties to accumulate work."""
+        self.provenance = batch
 
 
 class Model(Configurable):
@@ -33,34 +48,37 @@ class Model(Configurable):
     def from_cfg(cls, cfg: dict) -> object:
         """Return model from cfg."""
         kwargs = {
-            key: cast(cfg[key])
-            for key, cast in (
-                ('first_model_configurable_property', int),
-                ('second_model_configurable_property', float),
+            key: from_cfg(cfg[key])
+            for key, from_cfg in (
+                ("first_model_configurable_property", int),
+                ("second_model_configurable_property", float),
             )
         }
         return cls(**kwargs)
 
     @classmethod
-    def patch_args(cls, cfg: dict, args) -> None:
-        """Patch cfg from args."""
-        # pylint: disable=abstract-method
+    def patch_args(cls, args: Namespace, cfg: dict) -> dict:
+        """Patch args into cfg."""
+        return cfg
 
     @garbage_collection
-    def __call__(
-            self,
-            input,  # pylint: disable=redefined-builtin
-            output):
+    def __call__(self, inputs, outputs):
         """Run model."""
-        idfs = input()
-        tdfs = self.transform(*idfs)
-        pdfs = self.predict(*tdfs)
-        output(idfs, pdfs)  # allow idfs to be tracked with their pdfs
+        batch = inputs()
+        #  batch = self.transform(batch), if inputs doesn't perform transform
+        batch = self.predict(batch)
+        outputs(batch)
 
-    def transform(self, *idfs) -> tuple:
-        """Transform."""
+    def transform(self, batch) -> object:
+        """Transform.
+
+        Return Transforms with a source for provenance.
+        """
         raise NotImplementedError()
 
-    def predict(self, *tdfs) -> tuple:
-        """Predict."""
+    def predict(self, batch) -> object:
+        """Predict.
+
+        Return Predictions with a provenance
+        """
         raise NotImplementedError()

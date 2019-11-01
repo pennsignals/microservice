@@ -1,11 +1,11 @@
 [BASIC]
-good-names=df,e,f,i,ok,logger,ts,v
+good-names=df,e,f,i,ok,logger
 
 [MASTER]
 ignore = version.py
 
 [MESSAGES CONTROL]
-disable=duplicate-code
+disable=duplicate-code,C0330
 
 [MISCELLANEOUS]
 # List of note tags to take in consideration, separated by a comma.

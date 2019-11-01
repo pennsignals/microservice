@@ -14,7 +14,7 @@ services:
     command: [--noauth, --smallfiles, --quiet]
 
   jupyter:
-    image: quay.io/pennsignals/alpine-3.8-python-3.7-jupyter:v2.0
+    image: quay.io/pennsignals/alpine-3.8-python-3.7-jupyter:6.0
     depends_on:
     - mongo
     environment:

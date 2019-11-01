@@ -1,6 +1,7 @@
 """Configurable."""
 
 from __future__ import annotations
+
 from argparse import Namespace
 
 
@@ -13,6 +14,9 @@ class Configurable:
         raise NotImplementedError()
 
     @classmethod
-    def patch_args(cls, cfg: dict, args: Namespace) -> None:
-        """Patch args into cfg."""
+    def patch_args(cls, args: Namespace, cfg: dict) -> object:
+        """Patch args into cfg, return cfg.
+
+        Returned cfg is typically a dict.
+        """
         raise NotImplementedError()

@@ -27,4 +27,3 @@ workflows:
     jobs:
       - build:
           context: Quay.io
-

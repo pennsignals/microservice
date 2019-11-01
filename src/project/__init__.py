@@ -1,56 +1,56 @@
 """Project."""
 
 from __future__ import annotations
-from logging import (
-    basicConfig,
-    getLogger,
-    INFO,
-)
+
+from argparse import Namespace
+from logging import INFO, basicConfig, getLogger
 from sys import stdout
 
-from .micro import NomadScheduled as BaseMicro
-from .input import Input
-from .output import Output
-from .model import Model
+from setuptools_scm import get_version
 
+from .example_inputs import Inputs
+from .example_outputs import Outputs
+from .model import Model
+from .service import SimpleService as BaseService
 
 basicConfig(
     level=INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    stream=stdout)
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=stdout,
+)
 logger = getLogger(__name__)
 
 
-class Micro(BaseMicro):
-    """Micro."""
+__version__ = get_version(root="../..", relative_to=__file__)
 
-    DESCRIPTION = 'Describe your microservice here.'
 
-    ARGS = {
-        **BaseMicro.ARGS,
-        **Input.ARGS,
-        **Output.ARGS,
-    }
+class Service(BaseService):
+    """Service."""
+
+    DESCRIPTION = "Describe your microservice here."
+
+    ARGS = {**BaseService.ARGS, **Inputs.ARGS, **Outputs.ARGS}
 
     @classmethod
-    def from_cfg(cls, cfg: dict) -> Micro:
+    def from_cfg(cls, cfg: dict) -> Service:
         """Return microservice from cfg."""
         kwargs = {
-            key: cast(cfg[key])
-            for key, cast in (
-                ('input', Input.from_cfg),
-                ('output', Output.from_cfg),
-                ('model', Model.from_cfg))}
+            key: from_cfg(cfg[key])
+            for key, from_cfg in (
+                ("inputs", Inputs.from_cfg),
+                ("outputs", Outputs.from_cfg),
+                ("model", Model.from_cfg),
+            )
+        }
         return cls(**kwargs)
 
     @classmethod
-    def patch_args(cls, cfg: dict, args) -> None:
-        """Patch cfg from args."""
+    def patch_args(cls, args: Namespace, cfg: dict) -> dict:
+        """Patch args into cfg."""
         for key, patch_args in (
-                ('input', Input.patch_args),
-                ('output', Output.patch_args),
-                ('model', Model.patch_args)):
-            entry = cfg.get(key)
-            if entry is None:
-                entry = cfg[key] = {}
-            patch_args(entry, args)
+            ("inputs", Inputs.patch_args),
+            ("outputs", Outputs.patch_args),
+            ("model", Model.patch_args),
+        ):
+            cfg[key] = patch_args(args, cfg.get(key))
+        return cfg

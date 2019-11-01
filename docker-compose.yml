@@ -2,7 +2,7 @@ version: "3.7"
 services:
 
   mongo:
-    image: mongo:4.0.6
+    image: mongo:4.0.12
     expose:
     - "27017"
     ports:
@@ -14,7 +14,7 @@ services:
     command: [--noauth, --smallfiles, --quiet]
 
   jupyter:
-    image: quay.io/pennsignals/alpine-3.8-python-3.7-jupyter:v2.0
+    image: quay.io/pennsignals/alpine-3.8-python-3.7-jupyter:7.0
     depends_on:
     - mongo
     environment:
@@ -33,9 +33,12 @@ services:
     build: .
     depends_on:
     - mongo
+    # env_file: ./secrets/secrets.env
     environment:
     - CONFIGURATION=./local/configuration.yml
     # - INPUT_URI=mongodb://mongo/tests
     - OUTPUT_URI=mongodb://mongo/tests
+    volumes:
+    # - ./model/tmp/model:ro
     working_dir: /tmp
-    entrypoint: ["microservice.run_once_now"]  # see setup.py console_scripts
+    entrypoint: ["project"]  # see setup.py console_scripts

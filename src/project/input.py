@@ -1,26 +1,20 @@
 """Input."""
 
 from __future__ import annotations
+
 from argparse import Namespace
-from logging import (
-    basicConfig,
-    getLogger,
-    INFO,
-)
+from logging import INFO, basicConfig, getLogger
 from sys import stdout
 
 from yaml import safe_load as yaml_loads
 
-from .mssql import (
-    Input as BaseMssqlInput,
-    # retry_on_operational_error,
-)
-
+from .mssql import Input as BaseMssqlInput  # retry_on_operational_error,
 
 basicConfig(
     level=INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    stream=stdout)
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=stdout,
+)
 logger = getLogger(__name__)
 
 
@@ -28,28 +22,26 @@ class Input(BaseMssqlInput):
     """Input."""
 
     ARGS = {
-        ('INPUT_URI', '-input-uri'): {
-            'dest': 'input_uri',
-            'help': 'Mssql input uri.',
-            'type': str,
+        ("INPUT_URI", "--input-uri"): {
+            "dest": "input_uri",
+            "help": "Mssql input uri.",
+            "type": str,
         },
-        ('INPUT_TABLES', '-input-tables'): {
-            'dest': 'input_tables',
-            'help': 'Yaml configuration file of tables.',
-            'type': str,
+        ("INPUT_TABLES", "--input-tables"): {
+            "dest": "input_tables",
+            "help": "Yaml configuration file of tables.",
+            "type": str,
         },
     }
 
     @classmethod
-    def patch_args(cls, cfg: dict, args: Namespace) -> None:
+    def patch_args(cls, args: Namespace, cfg: dict) -> None:
         """Patch args into cfg."""
-        for key, value in (
-                ('uri', args.input_uri),):
+        for key, value in (("uri", args.input_uri),):
             if value is not None:
                 cfg[key] = value
 
-        for key, value in (
-                ('tables', args.input_tables),):
+        for key, value in (("tables", args.input_tables),):
             if value is not None:
                 with open(value) as fin:
                     cfg[key] = yaml_loads(fin.read())
@@ -71,9 +63,9 @@ class Input(BaseMssqlInput):
         #     return idf1, idf2
         raise NotImplementedError()
 
-    # retry_on_operational_error()
-    # def get_df1(cursor) -> DataFrame:
-        # """Get df1."""
-        # cursor.execute('''select 1 as n''')
-        # return DataFrame(cursor.fetchAll())
-        # raise NotImplementedError()
+
+# retry_on_operational_error()
+# def get_df1(cursor) -> DataFrame:
+#    """Get df1."""
+#    cursor.execute('''select 1 as n''')
+#    return DataFrame(cursor.fetchAll())

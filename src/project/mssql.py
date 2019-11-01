@@ -1,48 +1,41 @@
 """Mssql."""
 
 from __future__ import annotations
+
+import re
 from contextlib import contextmanager
 from functools import wraps
-from logging import (
-    basicConfig,
-    getLogger,
-    INFO,
-)
-import re
+from logging import INFO, basicConfig, getLogger
 from sys import stdout
 from time import sleep as block
-from urllib.parse import (
-    parse_qsl,
-    unquote,
-)
+from urllib.parse import parse_qsl, unquote
 
 from pandas import DataFrame
+
 # pylint: disable=no-name-in-module
-from pymssql import (  # noqa: N812
-    connect as MssqlConnection,
-    DatabaseError,
-    InterfaceError,
-    OperationalError,
-    # output as mssql_output,
-)
+from pymssql import DatabaseError, InterfaceError, OperationalError
+from pymssql import connect as MssqlConnection
 
 from .configurable import Configurable
-from .constants import (
-    BACKOFF,
-    RETRIES,
-)
+from .constants import BACKOFF, RETRIES
 
 basicConfig(
     level=INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    stream=stdout)
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=stdout,
+)
 logger = getLogger(__name__)  # pylint: disable=invalid-name
 
 
 def retry_on_operational_error(retries=RETRIES, backoff=BACKOFF):
-    """Retry decorator for OperationalErrors."""
+    """Retry decorator for OperationalErrors.
+
+    Use this decorator to make operations resilient to db failure.
+    """
+
     def wrapper(func):
         """Return wrapped method."""
+
         @wraps(func)
         def wrapped(*args, **kwargs):
             """Return method result."""
@@ -56,26 +49,33 @@ def retry_on_operational_error(retries=RETRIES, backoff=BACKOFF):
                     except OperationalError:
                         block(backoff * i)
                 raise
+
         return wrapped
+
     return wrapper
 
 
-class Uri(Configurable):  # noqa: E501; pylint: disable=too-many-instance-attributes,abstract-method,line-too-long
+class Uri(
+    Configurable
+):  # noqa: E501; pylint: disable=too-many-instance-attributes,abstract-method,line-too-long
     """Uri."""
 
-    URI = re.compile((
-        r'mssql://'
-        r'(?:'
-        r'(?P<username>[^:@/]*)(?::(?P<password>[^@/]*))?'
-        r'@)?'
-        r'(?:'
-        r'(?:\[(?P<ipv6host>[^\]]+)\]'
-        r'|'
-        r'(?P<ipv4host>[^/:]+)'
-        r')?'
-        r'(?::(?P<port>[^/]*))?'
-        r')?'
-        r'(?:/(?P<database>.*))?'))
+    URI = re.compile(
+        (
+            r"mssql://"
+            r"(?:"
+            r"(?P<username>[^:@/]*)(?::(?P<password>[^@/]*))?"
+            r"@)?"
+            r"(?:"
+            r"(?:\[(?P<ipv6host>[^\]]+)\]"
+            r"|"
+            r"(?P<ipv4host>[^/:]+)"
+            r")?"
+            r"(?::(?P<port>[^/]*))?"
+            r")?"
+            r"(?:/(?P<database>.*))?"
+        )
+    )
 
     @classmethod
     def _from_qsl(cls, in_kwargs, out_kwargs):
@@ -90,14 +90,15 @@ class Uri(Configurable):  # noqa: E501; pylint: disable=too-many-instance-attrib
                 query[key] = [entry, value]
 
         for key, cast in (
-                ('timeout', int),
-                ('login_timeout', int),
-                ('charset', str),
-                ('as_dict', bool),
-                ('appname', str),
-                ('conn_properties', str),
-                ('autocommit', bool),
-                ('tds_version', str)):
+            ("timeout", int),
+            ("login_timeout", int),
+            ("charset", str),
+            ("as_dict", bool),
+            ("appname", str),
+            ("conn_properties", str),
+            ("autocommit", bool),
+            ("tds_version", str),
+        ):
             value = query.get(key, None)
             if value is not None:
                 out_kwargs[key] = cast(unquote(value))
@@ -108,54 +109,57 @@ class Uri(Configurable):  # noqa: E501; pylint: disable=too-many-instance-attrib
         match = Uri.URI.match(cfg)
         if match is None:
             logger.info(cfg)
-            raise ValueError('Invalid mssql uri')
+            raise ValueError("Invalid mssql uri")
         kwargs = match.groupdict()
-        if kwargs['database'] is not None:
-            tokens = kwargs['database'].split('?', 2)
-            kwargs['database'] = tokens[0]
+        if kwargs["database"] is not None:
+            tokens = kwargs["database"].split("?", 2)
+            kwargs["database"] = tokens[0]
 
             if len(tokens) > 1:
                 cls._from_qsl(parse_qsl(tokens[1]), kwargs)
 
         for key, cast in (
-                ('username', str),
-                ('password', str),
-                ('database', str),
-                ('ipv4host', str),
-                ('ipv6host', str),
-                ('port', int)):
+            ("username", str),
+            ("password", str),
+            ("database", str),
+            ("ipv4host", str),
+            ("ipv6host", str),
+            ("port", int),
+        ):
             value = kwargs.get(key, None)
             if value is not None:
                 kwargs[key] = cast(unquote(value))
 
         ipv4_host, ipv6_host = (
-            kwargs.pop(key) for key in ('ipv4host', 'ipv6host'))
-        kwargs['host'] = ipv4_host or ipv6_host
+            kwargs.pop(key) for key in ("ipv4host", "ipv6host")
+        )
+        kwargs["host"] = ipv4_host or ipv6_host
 
         return cls(**kwargs)
 
     def __init__(  # pylint: disable=too-many-arguments,too-many-locals
-            self,
-            host: str = '',
-            username: str = None,
-            password: str = None,
-            database: str = '',
-            timeout: int = 0,
-            login_timeout: int = 0,
-            charset: str = 'UTF-8',
-            as_dict: bool = False,
-            appname: str = '',
-            port: int = 1433,
-            conn_properties: str = None,
-            autocommit: bool = False,
-            tds_version: str = None) -> object:
+        self,
+        host: str = "",
+        username: str = None,
+        password: str = None,
+        database: str = "",
+        timeout: int = 0,
+        login_timeout: int = 0,
+        charset: str = "UTF-8",
+        as_dict: bool = False,
+        appname: str = "",
+        port: int = 1433,
+        conn_properties: str = None,
+        autocommit: bool = False,
+        tds_version: str = None,
+    ) -> object:
         """Initialize mssql uri."""
         if charset is None:
-            charset = 'UTF-8'
+            charset = "UTF-8"
         if port is None:
             port = 1433
         if tds_version is None:
-            tds_version = '7.3'
+            tds_version = "7.3"
         self.host = host
         self.username = username
         self.password = password
@@ -174,19 +178,20 @@ class Uri(Configurable):  # noqa: E501; pylint: disable=too-many-instance-attrib
     def connection(self):
         """Mssql connection contextmanager."""
         with MssqlConnection(
-                host=self.host,
-                user=self.username,
-                password=self.password,
-                port=self.port,
-                database=self.database,
-                timeout=self.timeout,
-                login_timeout=self.login_timeout,
-                charset=self.charset,
-                as_dict=self.as_dict,
-                appname=self.appname,
-                conn_properties=self.conn_properties,
-                autocommit=self.autocommit,
-                tds_version=self.tds_version) as connection:
+            host=self.host,
+            user=self.username,
+            password=self.password,
+            port=self.port,
+            database=self.database,
+            timeout=self.timeout,
+            login_timeout=self.login_timeout,
+            charset=self.charset,
+            as_dict=self.as_dict,
+            appname=self.appname,
+            conn_properties=self.conn_properties,
+            autocommit=self.autocommit,
+            tds_version=self.tds_version,
+        ) as connection:
             try:
                 logger.info('{"mssql": "open"}')
                 yield connection
@@ -218,23 +223,22 @@ class Uri(Configurable):  # noqa: E501; pylint: disable=too-many-instance-attrib
     @retry_on_operational_error()
     def ping(self, cursor) -> bool:
         """Ping."""  # pylint: disable=no-self-use
-        cursor.execute('''select 1 as n''')
+        cursor.execute("""select 1 as n""")
         for _ in cursor.fetchall():
             return True
         return False
 
 
-class Input(Configurable):
+class Input(Configurable):  # pylint: disable=abstract-method
     """Input."""
 
     @classmethod
     def from_cfg(cls, cfg: dict) -> object:
         """Return input from cfg."""
         kwargs = {
-            key: cast(cfg[key])
-            for key, cast in (
-                ('tables', list),
-                ('uri', Uri.from_cfg))}
+            key: from_cfg(cfg[key])
+            for key, from_cfg in (("tables", list), ("uri", Uri.from_cfg))
+        }
         return cls(**kwargs)
 
     @classmethod
@@ -271,8 +275,10 @@ class Input(Configurable):
         failures = []
         for each in self.tables:
             try:
-                sql = '''
-select 1 as n where exists (select 1 as n from %s)''' % (each,)
+                sql = """
+select 1 as n where exists (select 1 as n from %s)""" % (
+                    each,
+                )
                 cursor.execute(sql)
                 for _ in cursor.fetchall():
                     pass

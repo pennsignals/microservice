@@ -9,7 +9,6 @@ Create an private empty git repo for your project on github:
 - `git mv src/project src/<project>`
 - Update `setup.cfg` line `--cov project` to `--cov <project>`
 - Update `setup.py` line `url=https://github.com/pennsignals/microservice` to `https://github.com/pennsignals/<project>`
-- Update the path of the excluded file `version.py` in `setup.cfg` for flake8.
 - Update `setup.py` console scripts for project:
 ```
         'console_scripts': (
